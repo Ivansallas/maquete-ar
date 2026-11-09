@@ -58,6 +58,35 @@ they communicate through plain dataclasses (`QRMarker`, `TrackedMarker`,
   file, and `DemoSource` (synthetic moving camera) so everything is testable
   without hardware.
 
+## Phone version (web/)
+
+- **Static site, processing on the phone.** No backend: the browser reads the
+  camera (`getUserMedia`, needs HTTPS or localhost), detects, and draws. Frames
+  never leave the device. Hosted on GitHub Pages; `.github/workflows/site.yml`
+  runs the tests and `scripts/exportar_web.py` (copies `web/`, writes
+  `data/conteudo.json` from `content/`, copies only validated media, renders
+  `data/teste.png`) on every push to main.
+- **QR = link.** With `config.json → web.url`, printed QRs contain
+  `<url>/?e=<id>` so the phone's native camera opens the site. Both front-ends
+  accept the plain id or such a link (`normalize_qr_text` / `parseQrText`).
+- **Libraries**: `jsQR` (one QR per call, returns 4 corners) and `js-aruco2`
+  (`ARUCO_4X4_1000`, whose first 50 codes equal OpenCV `DICT_4X4_50` bit-for-bit;
+  corners come TL,TR,BR,BL like OpenCV — verified by reading its source).
+  Vendored unmodified in `web/vendor/` (no CDN at runtime).
+- **jsQR quirks handled in `main.js: readQrs`**: it fails when two QRs are in the
+  image and is confused by ArUco squares (they look like finder patterns). So:
+  full frame → centre crop → per-ArUco crops, with detected ArUcos painted white
+  first. Per-ArUco crop = the learned QR box (`Fusion.predict`), or before
+  learning one side at a time (left first, as on the print sheet; remembered).
+- **Panel** = real HTML (crisp text, GIF animates natively) placed with CSS
+  `matrix3d` from a homography (`geometry.js`). If it would not fit on screen
+  or be too small/distorted, it becomes a bottom **card** that stays
+  `CARD_KEEP_SECONDS` after the marker is lost (time to read on a phone).
+  Only the element closest to the screen centre gets a panel.
+- **Detection budget**: copy downscaled to 960 px wide (ArUco needs ~50 px),
+  every 60 ms. `?debug=1` overlays frames/QR/ArUco/crops; `?teste=1` uses
+  `data/teste.png` instead of the camera.
+
 ## Extension points for later phases
 
 - New content type → subclass `ARObject` and select it in `ARObjectFactory._create()`

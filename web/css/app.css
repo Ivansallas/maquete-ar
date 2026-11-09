@@ -1,0 +1,236 @@
+:root {
+  --fundo: #14181c;
+  --texto: #f2f2f2;
+  --texto-suave: #c9cdd2;
+  --painel: rgba(20, 24, 28, 0.88);
+  --ok: #4cd964;
+  --aviso: #ffcc00;
+  --cor: #f0f0f0; /* cor do elemento (definida por painel) */
+  --cor-titulo: #141414;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+#camera,
+#imagem-teste {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* main.js usa a mesma regra para converter coordenadas */
+}
+
+#contornos {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+#contornos polygon {
+  fill: none;
+  stroke: var(--ok);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+#contornos polygon.perdido {
+  stroke: var(--texto-suave);
+  stroke-dasharray: 6 6;
+}
+
+#camada-ar {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* ---------------------------------------------------------------- painel */
+.painel {
+  width: 320px; /* largura "natural"; a perspectiva vem do transform (main.js) */
+  background: var(--painel);
+  border: 3px solid var(--cor);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+}
+
+#camada-ar .painel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  transition: opacity 0.25s ease-out;
+}
+
+.painel header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--cor);
+  color: var(--cor-titulo);
+}
+
+.painel .icone {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.painel .titulo {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.painel .midia {
+  display: block;
+  width: calc(100% - 28px);
+  max-height: 150px;
+  object-fit: contain;
+  margin: 12px 14px 0;
+  border-radius: 8px;
+}
+
+.painel .descricao {
+  margin: 0;
+  padding: 10px 14px 14px;
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--texto);
+}
+
+/* ---------------------------------------------------------------- cartão fixo */
+#cartao {
+  position: fixed;
+  left: max(12px, env(safe-area-inset-left));
+  right: max(12px, env(safe-area-inset-right));
+  bottom: max(12px, env(safe-area-inset-bottom));
+  max-height: 55vh;
+  overflow: auto;
+  z-index: 2;
+}
+
+#cartao .painel {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+#cartao .painel .midia {
+  max-height: 28vh;
+}
+
+#cartao .fechar {
+  position: absolute;
+  top: 6px;
+  right: max(6px, calc(50% - 254px));
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 22px;
+  line-height: 36px;
+  cursor: pointer;
+}
+
+/* ---------------------------------------------------------------- dica */
+#dica {
+  position: fixed;
+  top: max(10px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 24px);
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6);
+  font-size: 15px;
+  text-align: center;
+  z-index: 2;
+}
+
+#dica.aviso {
+  background: rgba(150, 100, 0, 0.85);
+}
+
+/* ---------------------------------------------------------------- tela inicial */
+#inicio {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 24px max(16px, env(safe-area-inset-left));
+  background: var(--fundo);
+  text-align: center;
+}
+
+#inicio[hidden] {
+  display: none;
+}
+
+#inicio h1 {
+  margin: 0 0 8px;
+  font-size: 30px;
+}
+
+#inicio p {
+  max-width: 420px;
+  margin: 6px 0;
+  color: var(--texto-suave);
+  line-height: 1.45;
+}
+
+#inicio-elemento {
+  color: var(--texto) !important;
+  font-weight: 700;
+}
+
+#abrir-camera {
+  margin: 18px 0 8px;
+  padding: 14px 28px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ok);
+  color: #0b2410;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+#abrir-camera:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+#inicio-erro {
+  color: #ffb4a8 !important;
+}
+
+.privacidade {
+  font-size: 13px;
+}

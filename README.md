@@ -7,13 +7,21 @@ reconhece o elemento e mostra um painel educativo — com texto, imagem ou
 animação — que acompanha o marcador na tela, inclusive inclinado e em
 perspectiva.
 
-Funciona offline, num PC com Windows e uma webcam USB. Nenhuma imagem da
-câmera é gravada ou enviada.
+Funciona de dois jeitos, com o mesmo conteúdo:
+
+- **No celular de cada aluno** — o aluno aponta a câmera para o QR, abre o
+  site e vê a realidade aumentada na tela do celular. Nada para instalar.
+- **No PC da escola** — webcam USB + tela ou projetor, para a turma toda.
+
+Nenhuma imagem da câmera é gravada ou enviada (no celular, tudo é
+processado no próprio aparelho).
 
 ## Requisitos
 
 - Windows 10/11 (também roda em Linux/macOS)
 - Python 3.11 ou mais novo (desenvolvido com 3.12)
+- Node.js 18+ (só para rodar os testes do JavaScript; opcional)
+- Para o celular: conta gratuita no GitHub (hospedagem do site)
 - Webcam USB (opcional para testar: existe um modo demonstração)
 - Impressora para os marcadores
 
@@ -28,6 +36,51 @@ python -m venv .venv
 
 > Linux/macOS: troque `.venv\Scripts\` por `.venv/bin/` em todos os comandos.
 
+## Versão para celular (publicar o site)
+
+O site fica no **GitHub Pages** (gratuito, com HTTPS — o celular só libera a
+câmera em sites HTTPS). Configuração feita **uma vez**:
+
+1. Crie uma conta em <https://github.com> (se ainda não tiver) e um
+   repositório **público** vazio, por exemplo `maquete-ar`.
+2. Envie o projeto (troque `USUARIO` pelo seu usuário do GitHub):
+
+   ```
+   git remote add origin https://github.com/USUARIO/maquete-ar.git
+   git push -u origin main
+   ```
+
+3. No GitHub: **Settings → Pages → Source: "GitHub Actions"**. A cada `git push`
+   o site é gerado e publicado sozinho (aba **Actions** mostra o andamento).
+   O endereço fica `https://USUARIO.github.io/maquete-ar/`.
+4. Coloque esse endereço no `config.json`:
+
+   ```json
+   "web": { "url": "https://USUARIO.github.io/maquete-ar/" }
+   ```
+
+5. Gere e imprima de novo os marcadores (próxima seção). Os QR passam a
+   conter o link `…/?e=trator`: a câmera do celular abre o site direto no
+   elemento. Os ArUcos não mudam.
+
+**Depois disso:** editou um texto, imagem ou animação → `git commit` e
+`git push`; em 1–2 minutos o site é atualizado.
+
+**Testar no PC antes de publicar** (a webcam funciona em `localhost`):
+
+```
+.venv\Scripts\python scripts\exportar_web.py
+.venv\Scripts\python -m http.server -d build\web 8000
+```
+
+Abra <http://localhost:8000/> (webcam) ou <http://localhost:8000/?teste=1>
+(maquete virtual, sem câmera). Acrescente `&debug=1` para ver o que está
+sendo detectado.
+
+No celular: o aluno toca em **Abrir câmera** e permite o uso da câmera. Quando
+o painel não cabe na tela sobre o QR, ele aparece como um cartão na parte de
+baixo, que continua visível alguns segundos para dar tempo de ler.
+
 ## Preparar a maquete
 
 1. Gere os marcadores:
@@ -38,7 +91,8 @@ python -m venv .venv
 
    Isso cria em `qrcodes/` a folha `folha_impressao_A4.png` (e páginas
    extras `_2`, `_3`... se houver muitos elementos), com cada QR (5 cm) e o
-   ArUco do mesmo elemento (3 cm) lado a lado.
+   ArUco do mesmo elemento (3 cm) lado a lado. Com `web.url` preenchido,
+   os QR levam o link do site (ver seção anterior).
 
 2. Imprima em **100% / "tamanho real"** (sem "ajustar à página").
 3. Recorte cada dupla e cole **o QR e o ArUco juntos, no mesmo plano**, perto
@@ -143,11 +197,14 @@ nova dupla.
 | Painel no lugar errado logo no início | Mostre o QR e o ArUco juntos e de perto por um instante: o programa aprende a posição do QR em relação ao ArUco. |
 | Aviso "arquivo(s) de conteúdo com erro" | Veja a mensagem no terminal: indica o arquivo e o campo com problema. |
 | Acentos estranhos no terminal | Use o Windows Terminal; o programa já configura UTF-8. |
+| Celular: "A câmera foi bloqueada" | Toque no cadeado ao lado do endereço, permita a câmera e recarregue. |
+| Celular: QR não abre o site | Confira `web.url` no `config.json` e gere/imprima os QR de novo. |
+| Celular: site desatualizado | Veja a aba **Actions** no GitHub (o build roda os testes; se falharem, nada é publicado). |
 
 ## Desenvolvimento
 
 ```
-.venv\Scripts\python -m pytest -q                                       # testes (sem câmera)
+.venv\Scripts\python -m pytest -q                                       # testes Python + JavaScript (Node.js)
 .venv\Scripts\ruff check . && .venv\Scripts\ruff format . && .venv\Scripts\mypy
 .venv\Scripts\python app.py --demo --headless --frames 60 --save out.png  # roda sem janela e salva o quadro
 ```
@@ -160,8 +217,9 @@ qr/         leitura, validação e geração dos QR Codes
 vision/     homografia, rastreamento, ArUco, fusão QR + ArUco
 ar/         painéis, textos, animações, composição do quadro
 content/    um JSON por elemento
+web/        versão para celular (HTML/CSS/JS, bibliotecas em web/vendor/)
 assets/     images/, animations/ (e pastas para as próximas fases)
-scripts/    gerar_qrcodes.py, gerar_aruco.py, testar_camera.py
+scripts/    gerar_qrcodes.py, gerar_aruco.py, testar_camera.py, exportar_web.py
 tests/      testes automatizados
 ```
 
@@ -177,6 +235,7 @@ Conventional Commits (`feat:`, `fix:`, `docs:`...).
 | 2 | Imagens nos painéis | ✅ |
 | 3 | Animações (GIF/WebP/APNG) | ✅ |
 | 4 | ArUco por elemento, fundido com o QR | ✅ |
+| — | Versão para celular (site, sem instalar nada) | ✅ |
 | 5 | Reconhecimento de objetos (YOLO) | — |
 | 6 | Modelos 3D | — |
 | 7 | Realidade aumentada completa | — |
