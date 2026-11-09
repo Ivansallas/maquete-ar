@@ -14,7 +14,12 @@ Anyone can print a QR Code and hold it in front of the camera.
   or build file paths from it. Content is looked up in an in-memory dict that
   `ContentManager` built at startup from `content/*.json`, so path traversal
   (`../`) is impossible by construction — keep it that way.
-- Long or binary QR payloads are dropped (`MAX_QR_TEXT`).
+- Long or binary QR payloads are dropped (`MAX_QR_TEXT` = 256).
+- QRs may contain a link `http(s)://…?e=<id>` (phone version). Only the single
+  `e` parameter is extracted and then validated by the same id regex; the link is
+  **never opened, fetched or navigated to** by either front-end. Other schemes
+  (`javascript:`, `file:`…) and repeated `e` are rejected. Mirrored in
+  `web/js/markers.js: parseQrText` — keep both in sync.
 
 ## Files loaded from disk
 
@@ -31,10 +36,19 @@ Anyone can print a QR Code and hold it in front of the camera.
 - Use `np.fromfile` + `cv2.imdecode` / `buf.tofile` for image I/O so paths
   with accents work on Windows.
 
+## Web (phone) version
+
+- Content is inserted with `textContent`/attributes only — never `innerHTML`
+  (the JSON is teacher-edited; keep it inert).
+- The site is static and public (GitHub Pages): never put anything private in
+  `content/` or `assets/`. Only media referenced by a valid element is published.
+- Third-party JS is vendored, unmodified, with licenses (`web/vendor/README.md`);
+  update deliberately (npm pack a pinned version), never hot-link a CDN.
+
 ## Privacy
 
 - The camera may capture students' faces. Frames are processed in memory and
-  never stored or transmitted. Screenshots happen only when the user presses
+  never stored or transmitted — on the phone too (processed in the browser). Screenshots happen only when the user presses
   `S` and go to `screenshots/` (git-ignored). Do not add automatic recording,
   uploading, or face analysis without the user explicitly asking.
 

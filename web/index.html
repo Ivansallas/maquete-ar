@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#14181c" />
+    <title>Maquete AR</title>
+    <link rel="stylesheet" href="css/app.css" />
+  </head>
+  <body>
+    <!-- Câmera (ou imagem de teste) ocupando a tela inteira -->
+    <video id="camera" playsinline muted autoplay></video>
+    <img id="imagem-teste" alt="" hidden />
+
+    <!-- Contorno dos marcadores reconhecidos -->
+    <svg id="contornos" aria-hidden="true"></svg>
+
+    <!-- Painel em perspectiva (preso ao QR) -->
+    <div id="camada-ar"></div>
+
+    <p id="dica" role="status" aria-live="polite">Carregando…</p>
+
+    <!-- Cartão fixo na parte de baixo (quando o painel não cabe em perspectiva) -->
+    <div id="cartao" hidden></div>
+
+    <!-- Tela inicial: o navegador só libera a câmera depois de um toque -->
+    <section id="inicio">
+      <h1>Maquete AR</h1>
+      <p id="inicio-elemento" hidden></p>
+      <p>Aponte a câmera do celular para os QR Codes da maquete e veja as informações aparecerem sobre ela.</p>
+      <button id="abrir-camera" type="button" disabled>Abrir câmera</button>
+      <p id="inicio-erro" role="alert" hidden></p>
+      <p class="privacidade">As imagens da câmera ficam só no seu aparelho: nada é gravado nem enviado.</p>
+    </section>
+
+    <template id="modelo-painel">
+      <article class="painel">
+        <header><span class="icone"></span><h2 class="titulo"></h2></header>
+        <img class="midia" alt="" hidden />
+        <p class="descricao"></p>
+      </article>
+    </template>
+
+    <!-- Bibliotecas de leitura (copiadas em vendor/, sem depender de outro site) -->
+    <script src="vendor/jsQR.js"></script>
+    <script src="vendor/aruco/cv.js"></script>
+    <script src="vendor/aruco/aruco.js"></script>
+    <script src="vendor/aruco/aruco_4x4_1000.js"></script>
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

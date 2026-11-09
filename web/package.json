@@ -1,0 +1,5 @@
+{
+  "private": true,
+  "type": "module",
+  "description": "Usado só para o Node tratar web/js como módulos ES nos testes (node --test web/tests/)."
+}

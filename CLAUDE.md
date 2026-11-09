@@ -3,8 +3,10 @@
 Augmented-reality app for a physical school model ("maquete") of an urban/rural
 community. A camera sees printed QR Codes placed on the model; the app identifies
 each element (agriculture, livestock, tractor...) and overlays an educational
-panel that follows the QR in perspective. Audience: school students; runs on a
-Windows PC with a USB webcam. Single maintainer. Current phase: **Phase 4
+panel that follows the QR in perspective. Audience: school students. Two
+front-ends share `content/`: the Python desktop app (Windows PC + USB webcam +
+projector) and a static web app in `web/` that runs on each student's phone
+(GitHub Pages). Single maintainer. Current phase: **Phase 4
 (one ArUco per element, fused with QR) done** — do not start later phases unless asked.
 
 # Stack
@@ -13,7 +15,10 @@ Windows PC with a USB webcam. Single maintainer. Current phase: **Phase 4
 - OpenCV 5.0 (`opencv-python`; QR via `cv2.QRCodeDetectorAruco`, ArUco via `cv2.aruco`)
 - NumPy 2.x, Pillow ≥10.1 (text with accents/emoji), `qrcode` (generation)
 - pytest, ruff (lint + format), mypy (types) — config in `pyproject.toml`
-- No database, no network, no deployment: local desktop app
+- Web (phone) version: plain HTML/CSS/ES modules in `web/`, no build tool, no npm
+  runtime deps; vendored `jsQR` + `js-aruco2` in `web/vendor/`; Node 22 only for
+  `node --test` (run by pytest). Published by `.github/workflows/site.yml`.
+- No database, no backend: the site is static; camera frames never leave the device
 
 # Commands
 
@@ -39,6 +44,11 @@ python -m venv .venv
 
 # Generate printable QR codes + each element's ArUco (qrcodes/*.png + A4 sheet[s])
 .venv\Scripts\python scripts\gerar_qrcodes.py
+
+# Web (phone) version: build the site and serve it locally (camera works on localhost)
+.venv\Scripts\python scripts\exportar_web.py
+.venv\Scripts\python -m http.server -d build\web 8000   # then /?teste=1&debug=1
+node --test "web/tests/*.test.mjs"                       # JS unit tests (also run by pytest)
 ```
 
 No build step.
@@ -54,7 +64,9 @@ qr/           QRCodeDetector, QRMarker + id validation, QR generator/print sheet
 vision/       homography (perspective.py), tracking, ArUco, QR+ArUco fusion, ObjectDetector interface
 ar/           panel/text drawing (overlay.py), ARObject types, animations, ARRenderer
 content/      one <id>.json per model element (educational text, PT-BR)
-scripts/      gerar_qrcodes.py, gerar_aruco.py, testar_camera.py
+web/          phone version: index.html, css/, js/ (geometry, markers = JS port of
+              fusion/tracking, main), vendor/ (third-party, unmodified), tests/
+scripts/      gerar_qrcodes.py, gerar_aruco.py, testar_camera.py, exportar_web.py
 tests/        pytest suite (no camera needed)
 assets/       images/ (Phase 2) and animations/ (Phase 3) for panels; icons/videos/models later
 ```
@@ -67,6 +79,11 @@ assets/       images/ (Phase 2) and animations/ (Phase 3) for panels; icons/vide
 - Fix bugs test-first: add a failing test in `tests/` that reproduces it, then fix.
 - Never put educational text in Python code — it lives in `content/*.json`.
 - The app must never crash during class: wrap failures, show an on-screen message, keep running.
+- Behaviour shared by both front-ends (QR parsing, fusion, tracking rules) must
+  change in **both** `qr/`/`vision/` (Python) and `web/js/markers.js` (JS), with tests
+  on each side.
+- For web changes, verify in a real browser: `?teste=1&debug=1` (headless Edge
+  screenshot works if the Chrome extension is unavailable).
 - Keep phases incremental: new content types = new `ARObject` subclass registered in
   `ARObjectFactory` (`ar/objects.py`), not changes to the render loop.
 

@@ -33,6 +33,9 @@
         "dictionary": "DICT_4X4_50",
         "marker_length_m": 0.03
     },
+    "web": {
+        "url": "https://ivansallas.github.io/maquete-ar/"
+    },
     "window": {
         "title": "Maquete AR",
         "fullscreen": false

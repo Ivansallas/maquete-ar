@@ -10,7 +10,21 @@ from PIL import Image, ImageDraw
 from qrcode.constants import ERROR_CORRECT_H
 
 from ar.overlay import load_font
+from core.content import ID_PATTERN
 from qr.markers import normalize_qr_text
+
+
+def qr_payload(element_id: str, base_url: str | None) -> str:
+    """Texto gravado no QR: o id puro ou, se o site estiver configurado
+    (``config.json`` → ``web.url``), o link ``<url>/?e=<id>`` que a câmera do
+    celular abre direto na página de realidade aumentada."""
+    if not ID_PATTERN.fullmatch(element_id):
+        raise ValueError(f"Identificador inválido para QR: {element_id!r}")
+    if not base_url:
+        return element_id
+    if not base_url.lower().startswith("https://"):
+        raise ValueError("web.url precisa começar com https:// (o celular só libera a câmera em HTTPS)")
+    return f"{base_url.rstrip('/')}/?e={element_id}"
 
 
 class QRCodeGenerator:
@@ -26,8 +40,8 @@ class QRCodeGenerator:
 
     def make_qr(self, data: str) -> Image.Image:
         """Retorna apenas o QR (imagem PIL em tons de cinza)."""
-        if normalize_qr_text(data) != data:
-            raise ValueError(f"Identificador inválido para QR: {data!r}")
+        if normalize_qr_text(data) is None:  # só id ou link com ?e=<id> (ver qr_payload)
+            raise ValueError(f"Conteúdo inválido para QR: {data!r}")
         qr = qrcode.QRCode(error_correction=ERROR_CORRECT_H, box_size=self.box_size, border=self.border)
         qr.add_data(data)
         qr.make(fit=True)
@@ -46,11 +60,12 @@ class QRCodeGenerator:
         draw.text(((qr_img.width - tw) / 2, qr_img.height - self.box_size), label, fill=0, font=font)
         return canvas
 
-    def save(self, data: str, out_dir: str | Path, label: str | None = None) -> Path:
+    def save(self, element_id: str, out_dir: str | Path, label: str | None = None, payload: str | None = None) -> Path:
+        """Salva ``<element_id>.png``; ``payload`` é o texto do QR (padrão: o id)."""
         out = Path(out_dir)
         out.mkdir(parents=True, exist_ok=True)
-        path = out / f"{data}.png"
-        self.make_labeled(data, label).save(path, dpi=(300, 300))
+        path = out / f"{element_id}.png"
+        self.make_labeled(payload or element_id, label or element_id).save(path, dpi=(300, 300))
         return path
 
 
@@ -68,13 +83,15 @@ def make_print_sheets(
     dpi: int = 300,
     aruco_ids: dict[str, int] | None = None,
     aruco_cm: float = 3.0,
+    base_url: str | None = None,
 ) -> list[Image.Image]:
     """Monta folhas A4 com todos os QR Codes em tamanho real (quantas forem precisas).
 
     ``qr_cm`` é o lado de cada QR impresso (incluindo a margem branca).
     Com ``aruco_ids`` (Fase 4), o ArUco de cada elemento é impresso à direita
     do QR; ``aruco_cm`` é o lado da parte preta (= ``aruco.marker_length_m``).
-    Cole os dois juntos na maquete, no mesmo plano.
+    Cole os dois juntos na maquete, no mesmo plano. Com ``base_url``, cada QR
+    leva o link do site (ver :func:`qr_payload`).
     """
     aruco_ids = aruco_ids or {}
     page_w, page_h = int(21.0 / 2.54 * dpi), int(29.7 / 2.54 * dpi)
@@ -102,7 +119,8 @@ def make_print_sheets(
             row, col = divmod(i, cols)
             x = margin + col * cell_w + (cell_w - item_w) // 2
             y = margin + row * cell_h
-            sheet.paste(generator.make_qr(data).resize((side, side), Image.Resampling.NEAREST), (x, y))
+            qr_img = generator.make_qr(qr_payload(data, base_url))
+            sheet.paste(qr_img.resize((side, side), Image.Resampling.NEAREST), (x, y))
             if data in aruco_ids:
                 marker = _aruco_image(aruco_ids[data], aruco_px)
                 ax, ay = x + side + aruco_gap, y + (side - marker.height) // 2

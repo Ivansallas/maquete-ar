@@ -5,13 +5,14 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 from enum import StrEnum
+from urllib.parse import parse_qs, urlsplit
 
 import numpy as np
 
 from core.content import ID_PATTERN
 
-#: Textos maiores que isso nem são considerados identificadores.
-MAX_QR_TEXT = 64
+#: Textos maiores que isso nem são considerados (cabe um link do site + ``?e=<id>``).
+MAX_QR_TEXT = 256
 
 
 class MarkerStatus(StrEnum):
@@ -25,13 +26,35 @@ class MarkerStatus(StrEnum):
 def normalize_qr_text(raw: str | None) -> str | None:
     """Transforma o texto do QR em um identificador seguro, ou ``None``.
 
-    Apenas ``[a-z0-9_]`` é aceito. Assim um QR com comandos, caminhos
-    (``../``), URLs ou qualquer outro conteúdo é simplesmente rejeitado.
+    Aceita dois formatos:
+
+    * o próprio id (``"trator"``) — QRs da Fase 1;
+    * um link ``http(s)://…?e=trator`` — QRs para celular, que a câmera do
+      aparelho abre direto no site. Só o parâmetro ``e`` é usado; o link
+      **nunca** é aberto nem acessado pelo programa.
+
+    No fim, apenas ``[a-z0-9_]`` é aceito. Assim um QR com comandos,
+    caminhos (``../``) ou qualquer outro conteúdo é simplesmente rejeitado.
     """
     if not raw or len(raw) > MAX_QR_TEXT:
         return None
-    text = raw.strip().lower()
+    text = raw.strip()
+    if "://" in text:
+        text = _element_from_url(text) or ""
+    text = text.lower()
     return text if ID_PATTERN.fullmatch(text) else None
+
+
+def _element_from_url(url: str) -> str | None:
+    """Valor do parâmetro ``e`` de um link http(s), ou ``None``."""
+    try:
+        parts = urlsplit(url)
+    except ValueError:
+        return None
+    if parts.scheme.lower() not in ("http", "https"):
+        return None
+    values = parse_qs(parts.query).get("e", [])
+    return values[0] if len(values) == 1 else None  # "?e=a&e=b" é ambíguo: rejeita
 
 
 @dataclass

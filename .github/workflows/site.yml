@@ -1,0 +1,55 @@
+# Publica a versão para celular no GitHub Pages a cada push na main.
+# Gera o site a partir de content/ e assets/ (scripts/exportar_web.py),
+# então o professor só edita os JSON e faz push.
+# Configuração única no GitHub: Settings → Pages → Source: "GitHub Actions".
+name: Publicar site (celular)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Instalar dependências
+        # libgl1: o opencv-python precisa dela no Linux
+        run: |
+          sudo apt-get update && sudo apt-get install -y libgl1
+          python -m pip install -r requirements.txt
+      - name: Testes (Python + JavaScript)
+        run: python -m pytest -q
+      - name: Gerar o site
+        run: python scripts/exportar_web.py --out _site
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

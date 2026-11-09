@@ -9,3 +9,5 @@ camera/calibration.json
 *.log
 .mypy_cache/
 .ruff_cache/
+build/
+_site/

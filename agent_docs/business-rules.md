@@ -39,6 +39,14 @@ camera reads.
 - A QR that is valid but has no content shows "Conteúdo desconhecido"; a QR
   with arbitrary text shows "QR inválido". Neither is an error that stops anything.
 
+## Phone version
+
+- Students use their own phones: no install, no login, works in Chrome/Safari.
+  The page must explain itself (start screen, hints) and degrade gracefully:
+  camera denied → show the element's card from the QR link anyway.
+- A teacher only edits `content/` / `assets/` and pushes; publishing is automatic.
+- Printed QRs depend on `web.url`; changing the site address means reprinting QRs.
+
 ## Phases
 
 Development is phased (1: QR + text → 2: images → 3: animations → 4: ArUco

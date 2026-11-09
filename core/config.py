@@ -50,6 +50,9 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "marker_length_m": 0.03,  # lado do marcador impresso, em metros
     },
     "window": {"title": "Maquete AR", "fullscreen": False},
+    # Versão para celular: endereço HTTPS do site (ex.: GitHub Pages). Com ele,
+    # os QR Codes gerados levam o link "<url>/?e=<id>".
+    "web": {"url": None},
     "paths": {
         "content": "content",
         "assets": "assets",  # imagens (Fase 2) do campo "imagem"

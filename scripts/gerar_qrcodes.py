@@ -24,7 +24,7 @@ import cv2  # noqa: E402
 from ar.overlay import configure_console_utf8  # noqa: E402
 from core.config import load_config  # noqa: E402
 from core.content import ContentManager  # noqa: E402
-from qr.generator import QRCodeGenerator, build_demo_board, make_print_sheets  # noqa: E402
+from qr.generator import QRCodeGenerator, build_demo_board, make_print_sheets, qr_payload  # noqa: E402
 
 
 def main() -> int:
@@ -41,16 +41,22 @@ def main() -> int:
         print("Nenhum conteúdo válido em content/. Nada a gerar.")
         return 1
 
+    config = load_config(ROOT / "config.json")
+    base_url = config["web"]["url"]  # versão celular: QR com link do site
+    if base_url:
+        print(f"QR Codes com link para o site: {base_url}")
+    else:
+        print('Aviso: "web.url" vazio no config.json -> QR sem link (o celular não abrirá o site).')
     gen = QRCodeGenerator()
     items = [(cid, contents.get(cid).titulo) for cid in contents.ids]  # type: ignore[union-attr]
     for cid, titulo in items:
-        path = gen.save(cid, args.out, label=titulo)
+        path = gen.save(cid, args.out, label=titulo, payload=qr_payload(cid, base_url))
         print(f"  ✔ {path.relative_to(ROOT) if path.is_relative_to(ROOT) else path}")
 
     # Fase 4: o ArUco de cada elemento sai ao lado do QR, no tamanho do config.json
     aruco_ids = {element: marker for marker, element in contents.aruco_map.items()}
-    aruco_cm = float(load_config(ROOT / "config.json")["aruco"]["marker_length_m"]) * 100
-    sheets = make_print_sheets(items, gen, qr_cm=args.cm, aruco_ids=aruco_ids, aruco_cm=aruco_cm)
+    aruco_cm = float(config["aruco"]["marker_length_m"]) * 100
+    sheets = make_print_sheets(items, gen, qr_cm=args.cm, aruco_ids=aruco_ids, aruco_cm=aruco_cm, base_url=base_url)
     for old in args.out.glob("folha_impressao_A4*.png"):  # remove folhas de uma geração anterior
         old.unlink()
     for n, sheet in enumerate(sheets, start=1):
