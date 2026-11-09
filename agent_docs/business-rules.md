@@ -20,6 +20,10 @@ camera reads.
   renaming one invalidates QR Codes already printed and glued to the model.
 - **Never change an existing id** for the same reason. Change the title or
   description instead.
+- **Each element has its own ArUco** (`"aruco": N`, printed and glued right
+  next to its QR). The same rule applies: ArUco ids are unique across elements
+  and must never be changed or reused once printed. New elements take the next
+  free id. The 8 base elements use 0–7 (alphabetical order).
 - Keep descriptions to ~2–3 sentences (~200 characters) so the panel stays
   readable on screen.
 
@@ -38,5 +42,5 @@ camera reads.
 ## Phases
 
 Development is phased (1: QR + text → 2: images → 3: animations → 4: ArUco
-tracking → 5: YOLO → 6: 3D → 7: full AR). Phases 1–3 are done. Do not implement a
+tracking → 5: YOLO → 6: 3D → 7: full AR). Phases 1–4 are done. Do not implement a
 later phase unless the user explicitly asks; keep the architecture ready for it.

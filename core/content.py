@@ -20,6 +20,8 @@ log = logging.getLogger(__name__)
 
 #: Identificadores válidos: letras minúsculas, números e "_" (ex.: meio_ambiente).
 ID_PATTERN = re.compile(r"^[a-z0-9_]{1,40}$")
+#: Maior id de ArUco aceito no campo "aruco" (os dicionários do OpenCV vão até 1000).
+MAX_ARUCO_ID = 999
 
 #: Cores nomeadas aceitas no campo "cor" (valores em BGR, padrão do OpenCV).
 COLOR_NAMES: dict[str, tuple[int, int, int]] = {
@@ -71,6 +73,7 @@ class ElementContent:
     imagem: str | None = None
     animacao: str | None = None
     modelo: str | None = None
+    aruco: int | None = None  # id do marcador ArUco colado ao lado do QR (Fase 4)
     extras: dict[str, Any] = field(default_factory=dict, compare=False)
 
     @property
@@ -96,7 +99,13 @@ class ElementContent:
             if value is not None and not isinstance(value, str):
                 raise ContentError(f"campo '{key}' deve ser texto")
             optional[key] = value
-        known = {"id", "titulo", "descricao", *optional}
+        aruco = data.get("aruco")
+        # bool é subclasse de int em Python: "aruco": true não pode virar 1
+        if aruco is not None and (
+            not isinstance(aruco, int) or isinstance(aruco, bool) or not 0 <= aruco <= MAX_ARUCO_ID
+        ):
+            raise ContentError(f"campo 'aruco' deve ser um número inteiro de 0 a {MAX_ARUCO_ID}")
+        known = {"id", "titulo", "descricao", "aruco", *optional}
         return cls(
             id=element_id,
             titulo=data["titulo"].strip(),
@@ -106,6 +115,7 @@ class ElementContent:
             imagem=optional["imagem"],
             animacao=optional["animacao"],
             modelo=optional["modelo"],
+            aruco=aruco,
             extras={k: v for k, v in data.items() if k not in known},
         )
 
@@ -125,12 +135,15 @@ class ContentManager:
         self.content_dir = Path(content_dir)
         self.assets_dir = Path(assets_dir) if assets_dir is not None else None
         self._items: dict[str, ElementContent] = {}
+        #: id do ArUco -> id do elemento (Fase 4)
+        self.aruco_map: dict[int, str] = {}
         self.errors: list[str] = []
         self.load_all()
 
     def load_all(self) -> int:
         """(Re)carrega todos os conteúdos. Retorna quantos foram carregados."""
         self._items.clear()
+        self.aruco_map.clear()
         self.errors.clear()
         if not self.content_dir.is_dir():
             self._error(f"Pasta de conteúdo '{self.content_dir}' não encontrada.")
@@ -144,6 +157,10 @@ class ContentManager:
                 self._error(f"{path.name}: {exc}")
                 continue
             self._items[item.id] = item
+            if item.aruco is not None:
+                owner = self.aruco_map.setdefault(item.aruco, item.id)
+                if owner != item.id:  # o elemento carrega, só o ArUco repetido é ignorado
+                    self._error(f"{path.name}: aruco {item.aruco} já é usado por '{owner}' (ignorado)")
             if self.assets_dir is not None:
                 self._check_media(path.name, item)
         log.info("%d conteúdos carregados de '%s'.", len(self._items), self.content_dir)

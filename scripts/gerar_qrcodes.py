@@ -22,8 +22,9 @@ sys.path.insert(0, str(ROOT))
 import cv2  # noqa: E402
 
 from ar.overlay import configure_console_utf8  # noqa: E402
+from core.config import load_config  # noqa: E402
 from core.content import ContentManager  # noqa: E402
-from qr.generator import QRCodeGenerator, build_demo_board, make_print_sheet  # noqa: E402
+from qr.generator import QRCodeGenerator, build_demo_board, make_print_sheets  # noqa: E402
 
 
 def main() -> int:
@@ -46,12 +47,19 @@ def main() -> int:
         path = gen.save(cid, args.out, label=titulo)
         print(f"  ✔ {path.relative_to(ROOT) if path.is_relative_to(ROOT) else path}")
 
-    sheet = make_print_sheet(items, gen, qr_cm=args.cm)
-    sheet_path = args.out / "folha_impressao_A4.png"
-    sheet.save(sheet_path, dpi=(300, 300))
-    print(f"  ✔ {sheet_path.name} (imprima em 100% / 'tamanho real')")
+    # Fase 4: o ArUco de cada elemento sai ao lado do QR, no tamanho do config.json
+    aruco_ids = {element: marker for marker, element in contents.aruco_map.items()}
+    aruco_cm = float(load_config(ROOT / "config.json")["aruco"]["marker_length_m"]) * 100
+    sheets = make_print_sheets(items, gen, qr_cm=args.cm, aruco_ids=aruco_ids, aruco_cm=aruco_cm)
+    for old in args.out.glob("folha_impressao_A4*.png"):  # remove folhas de uma geração anterior
+        old.unlink()
+    for n, sheet in enumerate(sheets, start=1):
+        sheet_path = args.out / ("folha_impressao_A4.png" if n == 1 else f"folha_impressao_A4_{n}.png")
+        sheet.save(sheet_path, dpi=(300, 300))
+        print(f"  ✔ {sheet_path.name}")
+    print("    imprima em 100% ('tamanho real') e cole cada ArUco junto do seu QR, no mesmo plano")
 
-    board = build_demo_board(items)
+    board = build_demo_board(items, aruco_ids=aruco_ids)
     ok, buf = cv2.imencode(".png", board)
     if ok:
         buf.tofile(str(args.out / "demo_maquete.png"))

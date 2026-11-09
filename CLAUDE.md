@@ -4,8 +4,8 @@ Augmented-reality app for a physical school model ("maquete") of an urban/rural
 community. A camera sees printed QR Codes placed on the model; the app identifies
 each element (agriculture, livestock, tractor...) and overlays an educational
 panel that follows the QR in perspective. Audience: school students; runs on a
-Windows PC with a USB webcam. Single maintainer. Current phase: **Phase 3
-(animated GIF/WebP/APNG in panels) done** — do not start later phases unless asked.
+Windows PC with a USB webcam. Single maintainer. Current phase: **Phase 4
+(one ArUco per element, fused with QR) done** — do not start later phases unless asked.
 
 # Stack
 
@@ -37,7 +37,7 @@ python -m venv .venv
 # Lint + format + typecheck
 .venv\Scripts\ruff check . && .venv\Scripts\ruff format . && .venv\Scripts\mypy
 
-# Generate printable QR codes (qrcodes/*.png + A4 sheet)
+# Generate printable QR codes + each element's ArUco (qrcodes/*.png + A4 sheet[s])
 .venv\Scripts\python scripts\gerar_qrcodes.py
 ```
 
@@ -51,7 +51,7 @@ config.json   runtime config (camera, debug, AR panel, ArUco); defaults in core/
 core/         config loading, ContentManager (JSON content + validation), assets.py (safe media paths, image/animation loading)
 camera/       frame sources (webcam, file, demo), CameraManager, calibration
 qr/           QRCodeDetector, QRMarker + id validation, QR generator/print sheet
-vision/       homography (perspective.py), tracking, ArUco, ObjectDetector interface
+vision/       homography (perspective.py), tracking, ArUco, QR+ArUco fusion, ObjectDetector interface
 ar/           panel/text drawing (overlay.py), ARObject types, animations, ARRenderer
 content/      one <id>.json per model element (educational text, PT-BR)
 scripts/      gerar_qrcodes.py, gerar_aruco.py, testar_camera.py

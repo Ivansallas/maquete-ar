@@ -47,6 +47,8 @@ class QRMarker:
     corners: np.ndarray
     element_id: str | None = None
     status: MarkerStatus = MarkerStatus.UNREADABLE
+    #: ``True`` se a posição veio do ArUco do elemento, não do QR (Fase 4)
+    via_aruco: bool = False
 
     @classmethod
     def from_detection(cls, text: str, corners: np.ndarray) -> QRMarker:

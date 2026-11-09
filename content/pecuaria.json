@@ -3,5 +3,6 @@
     "titulo": "Pecuária",
     "icone": "🐄",
     "descricao": "Criação de animais como bois, vacas, porcos, galinhas e cabras para produção de carne, leite, ovos, couro e lã.",
-    "cor": "brown"
+    "cor": "brown",
+    "aruco": 5
 }

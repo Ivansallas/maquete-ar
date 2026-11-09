@@ -31,7 +31,7 @@
     "aruco": {
         "enabled": true,
         "dictionary": "DICT_4X4_50",
-        "marker_length_m": 0.04
+        "marker_length_m": 0.03
     },
     "window": {
         "title": "Maquete AR",

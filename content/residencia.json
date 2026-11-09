@@ -3,5 +3,6 @@
     "titulo": "Residência",
     "icone": "🏠",
     "descricao": "Casas onde as famílias moram. Na área urbana ficam mais próximas umas das outras; na área rural costumam ser mais afastadas.",
-    "cor": "red"
+    "cor": "red",
+    "aruco": 6
 }

@@ -54,41 +54,68 @@ class QRCodeGenerator:
         return path
 
 
-def make_print_sheet(
+def _aruco_image(marker_id: int, side_px: int) -> Image.Image:
+    """ArUco (só a parte preta mede ``side_px``) com margem branca, em PIL."""
+    from vision.aruco import ArucoDetector  # import local: evita ciclo qr <-> vision
+
+    return Image.fromarray(ArucoDetector().generate(marker_id, side_px))
+
+
+def make_print_sheets(
     items: list[tuple[str, str]],
     generator: QRCodeGenerator,
     qr_cm: float = 5.0,
     dpi: int = 300,
-) -> Image.Image:
-    """Monta uma folha A4 (300 dpi) com todos os QR Codes em tamanho real.
+    aruco_ids: dict[str, int] | None = None,
+    aruco_cm: float = 3.0,
+) -> list[Image.Image]:
+    """Monta folhas A4 com todos os QR Codes em tamanho real (quantas forem precisas).
 
     ``qr_cm`` é o lado de cada QR impresso (incluindo a margem branca).
+    Com ``aruco_ids`` (Fase 4), o ArUco de cada elemento é impresso à direita
+    do QR; ``aruco_cm`` é o lado da parte preta (= ``aruco.marker_length_m``).
+    Cole os dois juntos na maquete, no mesmo plano.
     """
+    aruco_ids = aruco_ids or {}
     page_w, page_h = int(21.0 / 2.54 * dpi), int(29.7 / 2.54 * dpi)
-    sheet = Image.new("L", (page_w, page_h), 255)
-    draw = ImageDraw.Draw(sheet)
     side = int(qr_cm / 2.54 * dpi)
     margin = int(1.0 / 2.54 * dpi)
-    cols = max(1, (page_w - 2 * margin) // (side + margin // 2))
-    cell_w = (page_w - 2 * margin) // cols
+    gap = margin // 2  # espaço entre colunas
+    aruco_px = int(aruco_cm / 2.54 * dpi)
+    aruco_gap = margin // 3
+    aruco_w = (aruco_gap + aruco_px + 2 * (aruco_px // 8)) if aruco_ids else 0  # ArUco + margem branca
+    item_w = side + aruco_w
+    usable_w, usable_h = page_w - 2 * margin, page_h - 2 * margin
+    cols = max(1, (usable_w + gap) // (item_w + gap))
+    cell_w = usable_w // cols
     font = load_font(int(dpi * 0.16), bold=True)
+    small = load_font(int(dpi * 0.09))
     cell_h = side + int(font.size * 2.2)
-    x0, y = margin, margin
-    for i, (data, label) in enumerate(items):
-        col = i % cols
-        if col == 0 and i > 0:
-            y += cell_h
-        if y + cell_h > page_h - margin:
-            break  # folha cheia (cabe 8 QRs de 5 cm)
-        qr_img = generator.make_qr(data).resize((side, side), Image.Resampling.NEAREST)
-        x = x0 + col * cell_w + (cell_w - side) // 2
-        sheet.paste(qr_img, (x, y))
-        tw = draw.textlength(label, font=font)
-        draw.text((x + (side - tw) / 2, y + side + 4), label, fill=0, font=font)
-        # linhas de corte pontilhadas
-        for dx in range(0, side, 24):
-            draw.line([(x + dx, y - 6), (x + dx + 10, y - 6)], fill=170)
-    return sheet
+    rows = max(1, usable_h // cell_h)
+    per_page = cols * rows
+
+    pages: list[Image.Image] = []
+    for first in range(0, len(items), per_page):
+        sheet = Image.new("L", (page_w, page_h), 255)
+        draw = ImageDraw.Draw(sheet)
+        for i, (data, label) in enumerate(items[first : first + per_page]):
+            row, col = divmod(i, cols)
+            x = margin + col * cell_w + (cell_w - item_w) // 2
+            y = margin + row * cell_h
+            sheet.paste(generator.make_qr(data).resize((side, side), Image.Resampling.NEAREST), (x, y))
+            if data in aruco_ids:
+                marker = _aruco_image(aruco_ids[data], aruco_px)
+                ax, ay = x + side + aruco_gap, y + (side - marker.height) // 2
+                sheet.paste(marker, (ax, ay))
+                caption = f"ArUco {aruco_ids[data]}"
+                cx = ax + (marker.width - draw.textlength(caption, font=small)) / 2
+                draw.text((cx, ay + marker.height), caption, fill=0, font=small)
+            tw = draw.textlength(label, font=font)
+            draw.text((x + (side - tw) / 2, y + side + 4), label, fill=0, font=font)
+            for dx in range(0, item_w, 24):  # linha de corte pontilhada (QR + ArUco)
+                draw.line([(x + dx, y - 6), (x + dx + 10, y - 6)], fill=170)
+        pages.append(sheet)
+    return pages
 
 
 def build_demo_board(
@@ -96,6 +123,7 @@ def build_demo_board(
     generator: QRCodeGenerator | None = None,
     size: tuple[int, int] = (1600, 1000),
     qr_px: int = 210,
+    aruco_ids: dict[str, int] | None = None,
 ) -> np.ndarray:
     """Cria uma "maquete virtual" (imagem BGR) com QR Codes espalhados.
 
@@ -118,13 +146,21 @@ def build_demo_board(
     for i in range(0, w, 60):  # canteiros de plantação
         cv2.line(board, (i, 30), (i + 30, h // 2 - 70), (40, 100, 140), 6)
 
+    aruco_ids = aruco_ids or {}
+    aruco_side = int(qr_px * 0.5)  # parte preta; como na folha impressa (3 cm ao lado de 5 cm)
+    aruco_total = aruco_side + 2 * (aruco_side // 8) + 12 if aruco_ids else 0
     cols = 4
     gap_x = w // cols
     for i, (data, _label) in enumerate(items):
         qr = np.array(generator.make_qr(data).resize((qr_px, qr_px), Image.Resampling.NEAREST))
         qr_bgr = cv2.cvtColor(qr, cv2.COLOR_GRAY2BGR)
         row, col = divmod(i, cols)
-        x = col * gap_x + (gap_x - qr_px) // 2
+        x = col * gap_x + (gap_x - qr_px - aruco_total) // 2
         y = 120 + row * (h // 2) if row == 0 else h // 2 + 110
         board[y : y + qr_px, x : x + qr_px] = qr_bgr
+        if data in aruco_ids:  # Fase 4: ArUco colado à direita do QR
+            marker = np.array(_aruco_image(aruco_ids[data], aruco_side))
+            mh, mw = marker.shape
+            ax, ay = x + qr_px + 12, y + (qr_px - mh) // 2
+            board[ay : ay + mh, ax : ax + mw] = cv2.cvtColor(marker, cv2.COLOR_GRAY2BGR)
     return board

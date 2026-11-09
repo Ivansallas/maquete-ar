@@ -225,7 +225,10 @@ class DemoSource(FrameSource):
 
 
 def build_source(
-    cam_cfg: dict[str, Any], source: str | int | None = None, demo_ids: list[str] | None = None
+    cam_cfg: dict[str, Any],
+    source: str | int | None = None,
+    demo_ids: list[str] | None = None,
+    aruco_map: dict[int, str] | None = None,
 ) -> FrameSource:
     """Cria a fonte a partir da configuração ou do argumento ``--source``.
 
@@ -245,7 +248,8 @@ def build_source(
         from qr.generator import build_demo_board  # import local evita ciclo
 
         ids = demo_ids or ["agricultura", "pecuaria", "comercio", "industria"]
-        board = build_demo_board([(i, i) for i in ids])
+        aruco_ids = {element: marker for marker, element in (aruco_map or {}).items()}
+        board = build_demo_board([(i, i) for i in ids], aruco_ids=aruco_ids)
         return DemoSource(board, width, height, fps)
     return FileSource(source)
 

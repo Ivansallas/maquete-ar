@@ -32,6 +32,7 @@ from qr.detector import QRCodeDetector
 from qr.markers import MarkerStatus
 from vision.aruco import ArucoDetector, ArucoMarker
 from vision.detector import NullObjectDetector, ObjectDetector
+from vision.fusion import MarkerFusion
 from vision.tracking import MarkerTracker
 
 ROOT = Path(__file__).resolve().parent
@@ -50,7 +51,7 @@ class MaqueteARApp:
         self.contents = ContentManager(ROOT / paths["content"], assets_dir=assets_dir)
         cam_cfg = config["camera"]
         self.camera = CameraManager(
-            build_source(cam_cfg, source, demo_ids=self.contents.ids[:8]),
+            build_source(cam_cfg, source, demo_ids=self.contents.ids[:8], aruco_map=self.contents.aruco_map),
             mirror=bool(cam_cfg.get("mirror", False)),
             reconnect_interval=float(cam_cfg.get("reconnect_interval", 2.0)),
             requested_size=(int(cam_cfg["width"]), int(cam_cfg["height"])),
@@ -68,6 +69,8 @@ class MaqueteARApp:
         )
         aru = config["aruco"]
         self.aruco = ArucoDetector(aru["dictionary"], float(aru["marker_length_m"])) if aru.get("enabled") else None
+        # Fase 4: o ArUco de cada elemento identifica/posiciona quando o QR falha
+        self.fusion = MarkerFusion(self.contents.aruco_map)
         self.calibration: CameraCalibration | None = None
         self.object_detector: ObjectDetector = NullObjectDetector()  # Fase 5: YOLO
         self.stats = FrameStats(qr_backend=self.qr.backend, source=self.camera.source.description)
@@ -83,8 +86,8 @@ class MaqueteARApp:
         self.stats.resolution = (w, h)
 
         detections = self.qr.detect(frame)
-        tracks = self.tracker.update(detections, now)
         aruco: list[ArucoMarker] = self.aruco.detect(frame, self.calibration) if self.aruco else []
+        tracks = self.tracker.update(self.fusion.update(detections, aruco), now)
 
         self.stats.detected = sum(1 for d in detections if d.status != MarkerStatus.UNREADABLE)
         readable = [d for d in detections if d.text]

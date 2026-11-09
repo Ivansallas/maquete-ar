@@ -8,7 +8,7 @@ paths:
   existing id (printed QR Codes depend on it).
 - Required: `id`, `titulo`, `descricao` (non-empty strings). Optional: `icone`
   (one emoji), `cor` (named color from `core/content.py: COLOR_NAMES` or
-  `#RRGGBB`), `imagem` (Phase 2), `animacao` (Phase 3), and for later phases `modelo`.
+  `#RRGGBB`), `imagem` (Phase 2), `animacao` (Phase 3), `aruco` (Phase 4), and for later phases `modelo`.
 - `imagem`: path relative to `assets/`, e.g. `"images/trator.jpg"` (a leading
   `assets/` is tolerated). PNG/JPG/WEBP/BMP, ≤ 15 MB; landscape images look best
   (shown at most ~0.42× the panel width tall). PNG transparency is kept. A missing
@@ -21,5 +21,8 @@ paths:
   longer ones are cut to fit the memory budget.
 - Text in Brazilian Portuguese with accents, for school students, ~2–3
   sentences (~200 chars). UTF-8, 4-space indentation.
+- `aruco`: integer 0–999, unique across elements, never changed once printed
+  (new elements take the next free id). Duplicates are reported and ignored on
+  the second file.
 - After adding a new element: run `scripts/gerar_qrcodes.py` to create its QR,
   then `pytest -q`.
