@@ -47,7 +47,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "aruco": {
         "enabled": True,
         "dictionary": "DICT_4X4_50",
-        "marker_length_m": 0.04,  # lado do marcador impresso, em metros
+        "marker_length_m": 0.03,  # lado do marcador impresso, em metros
     },
     "window": {"title": "Maquete AR", "fullscreen": False},
     "paths": {

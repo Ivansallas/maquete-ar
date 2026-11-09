@@ -96,8 +96,10 @@ class MarkerTracker:
         for track in candidates:
             prev = track.marker
             prev_size = max(max(prev.size), 1.0)
+            # mesmo elemento (lido pelo QR ou recriado pelo ArUco) ou mesmo texto
+            same = det.text == prev.text or (det.element_id is not None and det.element_id == prev.element_id)
             # QR ilegível neste quadro pode ser o mesmo QR lido antes
-            if not (det.text == prev.text or unreadable_now):
+            if not (same or unreadable_now):
                 continue
             if unreadable_now:
                 # O detector às vezes devolve um "QR ilegível" com cantos absurdos
@@ -127,7 +129,7 @@ class MarkerTracker:
             # mantém o texto já conhecido; só atualiza a posição
             track.marker = QRMarker(prev.text, corners.astype(np.float32), prev.element_id, prev.status)
         else:
-            track.marker = QRMarker(det.text, corners.astype(np.float32), det.element_id, det.status)
+            track.marker = QRMarker(det.text, corners.astype(np.float32), det.element_id, det.status, det.via_aruco)
         track.last_seen = now
         track.missing_frames = 0
         track.hits += 1

@@ -3,5 +3,6 @@
     "titulo": "Agricultura",
     "icone": "🌱",
     "descricao": "Atividade responsável pelo cultivo de plantas para produção de alimentos e matérias-primas, como grãos, frutas, verduras e fibras.",
-    "cor": "green"
+    "cor": "green",
+    "aruco": 0
 }

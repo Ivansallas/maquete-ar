@@ -6,6 +6,9 @@
   result image — this is how to verify rendering changes in a Claude session.
 - **Camera problems**: `scripts/testar_camera.py --list` finds working camera
   indices; put the right one in `config.json → camera.index`.
+- **Printing**: `scripts/gerar_qrcodes.py` puts each element's ArUco next to its
+  QR (5 cm QR + 3 cm ArUco = `aruco.marker_length_m`), 8 pairs per A4 page,
+  extra pages as needed. Print at 100 % and glue each pair together, flat.
 - **In-app keys**: `D` toggles DEBUG overlay, `S` saves a screenshot, `ESC`/`Q` quits.
 - **Version control**: Git, default branch `main` (local only, no remote yet).
   Use Conventional Commits and `feat/`/`fix/` branches (see `.claude/rules/general.md`);

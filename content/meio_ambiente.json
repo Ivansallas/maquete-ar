@@ -3,5 +3,6 @@
     "titulo": "Meio Ambiente",
     "icone": "🌳",
     "descricao": "Áreas verdes e árvores protegem o solo, a água e os animais, regulam o clima e garantem qualidade de vida para o campo e a cidade.",
-    "cor": "darkgreen"
+    "cor": "darkgreen",
+    "aruco": 4
 }

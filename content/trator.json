@@ -3,5 +3,6 @@
     "titulo": "Trator",
     "icone": "🚜",
     "descricao": "Máquina agrícola usada para preparar o solo, plantar, puxar implementos e transportar a colheita, aumentando a produtividade no campo.",
-    "cor": "yellow"
+    "cor": "yellow",
+    "aruco": 7
 }

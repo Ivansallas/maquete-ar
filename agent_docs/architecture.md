@@ -3,8 +3,8 @@
 ## Per-frame pipeline
 
 ```
-CameraManager.read() → QRCodeDetector.detect() → MarkerTracker.update()
-   → (ArucoDetector.detect()) → ARRenderer.render() → cv2.imshow
+CameraManager.read() → QRCodeDetector.detect() + ArucoDetector.detect()
+   → MarkerFusion.update() → MarkerTracker.update() → ARRenderer.render() → cv2.imshow
 ```
 
 Orchestrated by `MaqueteARApp.process()` in `app.py`. Each class has one job;
@@ -13,9 +13,18 @@ they communicate through plain dataclasses (`QRMarker`, `TrackedMarker`,
 
 ## Key decisions (don't "fix" these without discussing)
 
-- **QR identifies, ArUco locates.** QR Codes say *what* an element is; ArUco
-  markers (Phase 4) give a stable pose for 3D anchoring. Both are detected; only
-  QR drives content today.
+- **One ArUco per element, fused with the QR (Phase 4).** Each element's JSON has
+  `"aruco": N`; the ArUco is glued next to the QR. ArUco is detected much farther
+  and at steeper angles than QR, so `vision/fusion.py: MarkerFusion` turns an
+  ArUco into a synthetic `QRMarker` (`via_aruco=True`) whenever that element's QR
+  wasn't read. When QR and ArUco are seen together it *learns* the QR corners in
+  the ArUco's unit-square space (no calibration step), so the synthetic marker
+  lands exactly where the QR is; before learning it uses the ArUco square itself.
+  A read QR always wins (no duplicates); an unreadable QR lying inside the
+  synthetic quad is dropped (it is that same QR). Learning is in-memory only and
+  rejected if the QR is more than `MAX_LEARN_DISTANCE` ArUco sides away. The
+  tracker matches by `element_id`, so switching between QR and ArUco keeps the
+  same track (no flicker). ArUco poses (`rvec`/`tvec`) remain available for 3D (Phase 6).
 - **OpenCV's native QR detector, not PyZBar.** No native `zbar` install needed,
   and it returns the 4 corners. `QRCodeDetectorAruco` is preferred: measured
   ~2× faster than the classic detector at `detect_scale=0.75`, and it decoded

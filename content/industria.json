@@ -3,5 +3,6 @@
     "titulo": "Indústria",
     "icone": "🏭",
     "descricao": "Transforma matérias-primas vindas do campo e da natureza em produtos, como alimentos, roupas, móveis e máquinas.",
-    "cor": "gray"
+    "cor": "gray",
+    "aruco": 2
 }
