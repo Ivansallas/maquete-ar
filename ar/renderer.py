@@ -128,8 +128,9 @@ class ARRenderer:
         if content is None:
             return
         fade_out = 1.0 - track.missing_frames / (self.max_missing + 1)
-        opacity = self.base_ctx.opacity * self.fade_in.value(now - track.first_seen) * fade_out
-        ctx = replace(self.base_ctx, opacity=opacity, obstacles=obstacles)
+        elapsed = now - track.first_seen
+        opacity = self.base_ctx.opacity * self.fade_in.value(elapsed) * fade_out
+        ctx = replace(self.base_ctx, opacity=opacity, obstacles=obstacles, elapsed=elapsed)
         if ctx.opacity > 0.02:
             self.factory.get(content).render(frame, track.marker, ctx)
 

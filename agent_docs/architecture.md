@@ -55,8 +55,15 @@ they communicate through plain dataclasses (`QRMarker`, `TrackedMarker`,
   based on JSON fields (`animacao`, `modelo` are already parsed). Phase 2 did
   exactly this: `ImagePanel(TextPanel)` only overrides `_build_image()`; if the
   image fails to load the factory falls back to `TextPanel`.
+- Phase 3: `AnimatedPanel(TextPanel)` plays `animacao` (GIF/WebP/APNG, decoded by
+  Pillow into an `AnimatedImage`). The panel is rendered once with an empty
+  picture slot (`render_panel_slot`); each animation frame is pre-composed onto
+  that slot's background, and per video frame only the slot is swapped, and only
+  when the animation frame changes. Time comes from `RenderContext.elapsed`
+  (seconds since the marker appeared), so animations restart when a QR reappears
+  and play at the GIF's own speed, independent of camera FPS.
 - Media files referenced from JSON → always via `core/assets.py`
-  (`resolve_asset` + `load_image`), never by opening the path directly.
+  (`resolve_asset` + `load_image` / `load_animation`), never by opening the path directly.
 - Animations → `ar/animations.py` (`Animation.value(elapsed)`).
 - Object recognition → implement `vision/detector.py: ObjectDetector`
   (`NullObjectDetector` is the current placeholder wired in `app.py`).

@@ -4,8 +4,8 @@ Augmented-reality app for a physical school model ("maquete") of an urban/rural
 community. A camera sees printed QR Codes placed on the model; the app identifies
 each element (agriculture, livestock, tractor...) and overlays an educational
 panel that follows the QR in perspective. Audience: school students; runs on a
-Windows PC with a USB webcam. Single maintainer. Current phase: **Phase 2
-(images in panels) done** — do not start later phases unless asked.
+Windows PC with a USB webcam. Single maintainer. Current phase: **Phase 3
+(animated GIF/WebP/APNG in panels) done** — do not start later phases unless asked.
 
 # Stack
 
@@ -48,7 +48,7 @@ No build step.
 ```
 app.py        entry point + MaqueteARApp (Camera → QR → Tracker → Content → Renderer)
 config.json   runtime config (camera, debug, AR panel, ArUco); defaults in core/config.py
-core/         config loading, ContentManager (JSON content + validation), assets.py (safe image paths/loading)
+core/         config loading, ContentManager (JSON content + validation), assets.py (safe media paths, image/animation loading)
 camera/       frame sources (webcam, file, demo), CameraManager, calibration
 qr/           QRCodeDetector, QRMarker + id validation, QR generator/print sheet
 vision/       homography (perspective.py), tracking, ArUco, ObjectDetector interface
@@ -56,7 +56,7 @@ ar/           panel/text drawing (overlay.py), ARObject types, animations, ARRen
 content/      one <id>.json per model element (educational text, PT-BR)
 scripts/      gerar_qrcodes.py, gerar_aruco.py, testar_camera.py
 tests/        pytest suite (no camera needed)
-assets/       images/ for panels (Phase 2); icons/videos/models for later phases
+assets/       images/ (Phase 2) and animations/ (Phase 3) for panels; icons/videos/models later
 ```
 
 # Workflow Rules
