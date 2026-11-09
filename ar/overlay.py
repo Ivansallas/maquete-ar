@@ -104,6 +104,10 @@ def _rgb(bgr: Color) -> tuple[int, int, int]:
 PICTURE_MAX_HEIGHT = 0.42
 
 
+#: Área da imagem dentro do painel: (x, y, largura, altura) em pixels.
+Slot = tuple[int, int, int, int]
+
+
 def render_panel(content: ElementContent, width: int = 640, picture: np.ndarray | None = None) -> np.ndarray:
     """Cria a imagem BGRA do painel informativo de um elemento.
 
@@ -111,6 +115,14 @@ def render_panel(content: ElementContent, width: int = 640, picture: np.ndarray 
     reaproveitado (deformado em perspectiva) em todos os quadros.
     ``picture`` (BGRA, Fase 2) é desenhada entre o título e a descrição.
     """
+    return render_panel_slot(content, width, picture)[0]
+
+
+def render_panel_slot(
+    content: ElementContent, width: int = 640, picture: np.ndarray | None = None
+) -> tuple[np.ndarray, Slot | None]:
+    """Como :func:`render_panel`, mas também devolve onde a imagem foi desenhada
+    (usado pela animação da Fase 3 para trocar só essa área a cada quadro)."""
     pad = width // 20
     title_font = load_font(width // 13, bold=True)
     body_font = load_font(width // 22)
@@ -142,8 +154,10 @@ def render_panel(content: ElementContent, width: int = 640, picture: np.ndarray 
     draw.text((x, pad // 2), content.titulo.upper(), font=title_font, fill=title_color)
 
     y = header_h + pad // 2
+    slot: Slot | None = None
     if pic is not None:
-        img.alpha_composite(pic, ((width - pic.width) // 2, y))
+        slot = ((width - pic.width) // 2, y, pic.width, pic.height)
+        img.alpha_composite(pic, slot[:2])
         y += pic_h
     for line in body_lines:
         draw.text((pad, y), line, font=body_font, fill=(235, 235, 235))
@@ -151,7 +165,12 @@ def render_panel(content: ElementContent, width: int = 640, picture: np.ndarray 
     draw.rounded_rectangle((0, 0, width - 1, height - 1), radius, outline=accent + (255,), width=4)
 
     rgba = np.array(img)
-    return rgba[:, :, [2, 1, 0, 3]].copy()  # RGBA -> BGRA
+    return rgba[:, :, [2, 1, 0, 3]].copy(), slot  # RGBA -> BGRA
+
+
+def fit_picture_bgra(picture: np.ndarray, max_w: int, max_h: int) -> np.ndarray:
+    """Versão BGRA (NumPy) de :func:`_fit_picture`."""
+    return np.array(_fit_picture(picture, max_w, max_h))[:, :, [2, 1, 0, 3]].copy()
 
 
 def _fit_picture(picture: np.ndarray, max_w: int, max_h: int) -> Image.Image:

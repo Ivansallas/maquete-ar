@@ -29,13 +29,14 @@ camera reads.
   frames, bad JSON, unknown QR — all are shown as on-screen messages while the
   app keeps running and retrying. Only ESC/Q or closing the window exits.
 - A broken content file must not prevent the other elements from loading.
-- A missing/invalid image (`imagem`) never hides the element: it is reported
-  as an on-screen warning at startup and the panel is shown with text only.
+- A missing/invalid image (`imagem`) or animation (`animacao`) never hides the
+  element: it is reported as an on-screen warning at startup and the panel
+  falls back (animation → image → text only).
 - A QR that is valid but has no content shows "Conteúdo desconhecido"; a QR
   with arbitrary text shows "QR inválido". Neither is an error that stops anything.
 
 ## Phases
 
 Development is phased (1: QR + text → 2: images → 3: animations → 4: ArUco
-tracking → 5: YOLO → 6: 3D → 7: full AR). Phases 1 and 2 are done. Do not implement a
+tracking → 5: YOLO → 6: 3D → 7: full AR). Phases 1–3 are done. Do not implement a
 later phase unless the user explicitly asks; keep the architecture ready for it.

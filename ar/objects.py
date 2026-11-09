@@ -1,9 +1,9 @@
 """Objetos de realidade aumentada ancorados a um marcador.
 
 Todo conteúdo exibido sobre a maquete é um :class:`ARObject`. Hoje existe
-o :class:`TextPanel` (Fase 1) e o :class:`ImagePanel` (Fase 2). As próximas
-fases criam novas subclasses — ``AnimatedSprite`` (Fase 3), ``Model3D``
-(Fase 6) — e registram no :class:`ARObjectFactory`; o renderer não muda.
+o :class:`TextPanel` (Fase 1), o :class:`ImagePanel` (Fase 2) e o
+:class:`AnimatedPanel` (Fase 3). As próximas fases criam novas subclasses —
+``Model3D`` (Fase 6) — e registram no :class:`ARObjectFactory`; o renderer não muda.
 """
 
 from __future__ import annotations
@@ -13,10 +13,11 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
 
+import cv2
 import numpy as np
 
-from ar.overlay import render_panel
-from core.assets import AssetError, load_image, resolve_asset
+from ar.overlay import fit_picture_bgra, render_panel, render_panel_slot
+from core.assets import ANIMATION_EXTS, AnimatedImage, AssetError, load_animation, load_image, resolve_asset
 from core.content import ElementContent
 from qr.markers import QRMarker
 from vision.perspective import marker_homography, project_points, quad_is_valid, rect_corners, warp_onto
@@ -40,6 +41,8 @@ class RenderContext:
     min_panel_width_px: int = 260
     #: retângulos (x0, y0, x1, y1) que o painel billboard deve evitar cobrir (outros QRs)
     obstacles: tuple[tuple[float, float, float, float], ...] = ()
+    #: segundos desde que o marcador apareceu (anima o conteúdo, Fase 3)
+    elapsed: float = 0.0
 
 
 class ARObject(ABC):
@@ -153,6 +156,55 @@ class ImagePanel(TextPanel):
         return render_panel(self.content, resolution, self.picture)
 
 
+class AnimatedPanel(TextPanel):
+    """Painel com uma animação (GIF/WebP/APNG) no lugar da imagem (Fase 3).
+
+    Para não gastar memória com um painel inteiro por quadro, o painel é
+    renderizado uma vez com a área da imagem vazia; cada quadro da animação
+    é pré-composto sobre o fundo dessa área, e a cada quadro de vídeo só
+    essa área é trocada (e apenas quando o quadro da animação muda).
+    """
+
+    def __init__(self, content: ElementContent, clip: AnimatedImage, resolution: int = 640) -> None:
+        self.clip = clip
+        self._shown = -1
+        super().__init__(content, resolution)
+
+    def _build_image(self, resolution: int) -> np.ndarray:
+        blank = np.zeros_like(self.clip.frames[0])  # reserva a área com o tamanho certo
+        base, slot = render_panel_slot(self.content, resolution, blank)
+        assert slot is not None
+        x, y, w, h = slot
+        self._base, self._slot = base, slot
+        background = base[y : y + h, x : x + w]
+        self._slot_frames = [_compose(background, fit_picture_bgra(f, w, h), (w, h)) for f in self.clip.frames]
+        return self._frame_image(0)
+
+    def _frame_image(self, index: int) -> np.ndarray:
+        x, y, w, h = self._slot
+        image = self._base.copy()
+        image[y : y + h, x : x + w] = self._slot_frames[index]
+        self._shown = index
+        return image
+
+    def render(self, frame: np.ndarray, marker: QRMarker, ctx: RenderContext) -> np.ndarray | None:
+        index = self.clip.frame_index(ctx.elapsed)
+        if index != self._shown:
+            self.image = self._frame_image(index)
+        return super().render(frame, marker, ctx)
+
+
+def _compose(background: np.ndarray, top: np.ndarray, size: tuple[int, int]) -> np.ndarray:
+    """``top`` sobre ``background`` (ambos BGRA), resultado BGRA ``uint8``."""
+    if top.shape[1::-1] != size:  # quadros de tamanhos diferentes (raro): ajusta
+        top = cv2.resize(top, size, interpolation=cv2.INTER_AREA)
+    a = top[:, :, 3:4].astype(np.float32) / 255.0
+    out = np.empty_like(background)
+    out[:, :, :3] = (top[:, :, :3] * a + background[:, :, :3] * (1.0 - a)).round().astype(np.uint8)
+    out[:, :, 3] = np.maximum(background[:, :, 3], top[:, :, 3])
+    return out
+
+
 class ARObjectFactory:
     """Cria o objeto AR adequado para cada conteúdo (com cache).
 
@@ -174,14 +226,22 @@ class ARObjectFactory:
         return obj
 
     def _create(self, content: ElementContent) -> ARObject:
-        # Fase 3+: if content.animacao: AnimatedSprite(...); if content.modelo: Model3D(...)
+        # Prioridade: animação > imagem > só texto. Cada etapa que falha cai
+        # para a seguinte (o aviso já foi dado pelo ContentManager no início).
+        # Fase 6+: if content.modelo: Model3D(...)
+        if content.animacao and self.assets_dir is not None:
+            try:
+                path = resolve_asset(self.assets_dir, content.animacao, ANIMATION_EXTS)
+                return AnimatedPanel(content, load_animation(path, max_side=self.resolution), self.resolution)
+            except AssetError as exc:
+                log.warning("%s: animação ignorada (%s).", content.id, exc)
         if content.imagem and self.assets_dir is not None:
             try:
                 picture = load_image(resolve_asset(self.assets_dir, content.imagem), max_side=self.resolution * 2)
                 return ImagePanel(content, picture, self.resolution)
             except AssetError as exc:
                 # Já avisado pelo ContentManager no início; aqui só garantimos o fallback.
-                log.warning("%s: imagem ignorada (%s); usando painel só com texto.", content.id, exc)
+                log.warning("%s: imagem ignorada (%s).", content.id, exc)
         return TextPanel(content, self.resolution)
 
     def clear(self) -> None:

@@ -24,8 +24,10 @@ Anyone can print a QR Code and hold it in front of the camera.
   goes through `core/assets.py: resolve_asset`, which resolves paths relative
   to `assets/`, rejects absolute paths, drive letters and anything that escapes
   `assets/` after `Path.resolve()`, and allows only known extensions.
-  `load_image` caps file size (`MAX_IMAGE_BYTES`) and pixel size; decode
-  failures raise `AssetError` and are recoverable (text-only panel, never a crash).
+  `load_image` caps file size (`MAX_IMAGE_BYTES`) and pixel size; `load_animation`
+  also caps decoded memory and frame count (`MAX_ANIMATION_DECODED_BYTES`,
+  `MAX_ANIMATION_FRAMES`) so a huge GIF is truncated instead of exhausting RAM.
+  Decode failures raise `AssetError` and are recoverable (fallback panel, never a crash).
 - Use `np.fromfile` + `cv2.imdecode` / `buf.tofile` for image I/O so paths
   with accents work on Windows.
 

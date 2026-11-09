@@ -1,4 +1,4 @@
-"""Arquivos de mídia referenciados pelo conteúdo (Fase 2: imagens).
+"""Arquivos de mídia referenciados pelo conteúdo (Fase 2: imagens; Fase 3: animações).
 
 Segurança: o caminho vem de um JSON editável, então é tratado como entrada
 não confiável. Ele é sempre resolvido **dentro** da pasta ``assets/``;
@@ -9,14 +9,26 @@ que fazer (o painel cai para "só texto"; a aplicação nunca fecha).
 
 from __future__ import annotations
 
+import bisect
+import itertools
+from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
 
 import cv2
 import numpy as np
+from PIL import Image, ImageSequence
 
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp", ".bmp"}
+#: GIF, WebP animado e APNG (PNG animado). Um arquivo estático vira animação de 1 quadro.
+ANIMATION_EXTS = {".gif", ".webp", ".png"}
 #: Arquivos maiores que isso nem são lidos (protege a memória/tempo de abertura).
 MAX_IMAGE_BYTES = 15 * 1024 * 1024
+#: Memória máxima dos quadros decodificados de uma animação. Animações mais
+#: longas são cortadas (o loop fica mais curto) em vez de esgotar a memória.
+MAX_ANIMATION_DECODED_BYTES = 96 * 1024 * 1024
+MAX_ANIMATION_FRAMES = 300
+#: Duração usada para quadros com duração 0 ou muito curta (mesma regra dos navegadores).
+DEFAULT_FRAME_SECONDS = 0.1
 
 
 class AssetError(ValueError):
@@ -86,3 +98,67 @@ def _to_bgra_u8(img: np.ndarray) -> np.ndarray:
     if channels == 1:
         return cv2.cvtColor(img, cv2.COLOR_GRAY2BGRA)
     raise AssetError(f"imagem com {channels} canais não suportada")
+
+
+@dataclass
+class AnimatedImage:
+    """Quadros BGRA de uma animação e a duração (s) de cada um; toca em loop."""
+
+    frames: list[np.ndarray]
+    durations: list[float]
+    _ends: list[float] = field(init=False, repr=False)
+
+    def __post_init__(self) -> None:
+        if not self.frames or len(self.frames) != len(self.durations):
+            raise AssetError("animação sem quadros")
+        self._ends = list(itertools.accumulate(self.durations))
+
+    @property
+    def total(self) -> float:
+        return self._ends[-1]
+
+    def frame_index(self, elapsed: float) -> int:
+        """Índice do quadro a mostrar ``elapsed`` segundos após o início."""
+        if elapsed <= 0 or len(self.frames) == 1:
+            return 0
+        # +1e-9: as somas acumuladas têm erro de ponto flutuante (0.1 + 0.2 != 0.3)
+        index = bisect.bisect_right(self._ends, elapsed % self.total + 1e-9)
+        return min(index, len(self.frames) - 1)
+
+
+def load_animation(
+    path: str | Path,
+    max_side: int = 640,
+    max_bytes: int = MAX_ANIMATION_DECODED_BYTES,
+    max_frames: int = MAX_ANIMATION_FRAMES,
+) -> AnimatedImage:
+    """Lê um GIF/WebP/APNG com o Pillow (que já compõe cada quadro completo).
+
+    Quadros maiores que ``max_side`` são reduzidos. Se a animação passar de
+    ``max_bytes`` decodificados ou ``max_frames``, o restante é ignorado.
+    """
+    path = Path(path)
+    frames: list[np.ndarray] = []
+    durations: list[float] = []
+    used = 0
+    try:
+        if path.stat().st_size > MAX_IMAGE_BYTES:
+            raise AssetError(f"'{path.name}' é grande demais (máx. {MAX_IMAGE_BYTES // 2**20} MB)")
+        with Image.open(path) as im:
+            for frame in ImageSequence.Iterator(im):
+                rgba = frame.convert("RGBA")
+                rgba.thumbnail((max_side, max_side), Image.Resampling.LANCZOS)
+                size = rgba.width * rgba.height * 4
+                if frames and (used + size > max_bytes or len(frames) >= max_frames):
+                    break
+                used += size
+                ms = float(frame.info.get("duration") or 0)
+                durations.append(ms / 1000 if ms > 10 else DEFAULT_FRAME_SECONDS)
+                frames.append(np.array(rgba)[:, :, [2, 1, 0, 3]].copy())  # RGBA -> BGRA
+    # O Pillow sinaliza arquivos ruins com exceções variadas (truncado, formato
+    # desconhecido, "bomba" de descompressão...): todas viram AssetError.
+    except AssetError:
+        raise
+    except (OSError, ValueError, EOFError, SyntaxError, Image.DecompressionBombError) as exc:
+        raise AssetError(f"'{path.name}' não é uma animação válida ({exc})") from exc
+    return AnimatedImage(frames, durations)

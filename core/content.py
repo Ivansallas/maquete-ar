@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from core.assets import AssetError, resolve_asset
+from core.assets import ANIMATION_EXTS, IMAGE_EXTS, AssetError, resolve_asset
 
 log = logging.getLogger(__name__)
 
@@ -144,11 +144,8 @@ class ContentManager:
                 self._error(f"{path.name}: {exc}")
                 continue
             self._items[item.id] = item
-            if item.imagem and self.assets_dir is not None:
-                try:
-                    resolve_asset(self.assets_dir, item.imagem)
-                except AssetError as exc:
-                    self._error(f"{path.name}: imagem {exc} (painel será exibido só com texto)")
+            if self.assets_dir is not None:
+                self._check_media(path.name, item)
         log.info("%d conteúdos carregados de '%s'.", len(self._items), self.content_dir)
         return len(self._items)
 
@@ -167,6 +164,17 @@ class ContentManager:
     @property
     def ids(self) -> list[str]:
         return sorted(self._items)
+
+    def _check_media(self, file_name: str, item: ElementContent) -> None:
+        """Avisa (sem descartar o elemento) se a imagem/animação não puder ser usada."""
+        assert self.assets_dir is not None
+        for key, value, exts in (("animacao", item.animacao, ANIMATION_EXTS), ("imagem", item.imagem, IMAGE_EXTS)):
+            if not value:
+                continue
+            try:
+                resolve_asset(self.assets_dir, value, exts)
+            except AssetError as exc:
+                self._error(f"{file_name}: {key} {exc} (será ignorada)")
 
     def _error(self, message: str) -> None:
         self.errors.append(message)
