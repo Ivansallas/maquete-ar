@@ -1,0 +1,12 @@
+# Visão computacional (inclui o módulo ArUco a partir do OpenCV 4.7)
+opencv-python>=4.8
+numpy>=1.24
+# Geração dos QR Codes
+qrcode[pil]>=7.4
+# Texto com acentos/emoji sobre o vídeo
+Pillow>=10.1
+# Testes
+pytest>=8.0
+# Qualidade de código (lint + tipos)
+ruff>=0.15
+mypy>=2.0

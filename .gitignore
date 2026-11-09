@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+screenshots/
+qrcodes/*.png
+assets/markers/
+camera/calibration.json
+*.log
+.mypy_cache/
+.ruff_cache/

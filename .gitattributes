@@ -1,0 +1,6 @@
+# Quebras de linha LF no repositório e na cópia de trabalho (evita diffs falsos no Windows)
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary

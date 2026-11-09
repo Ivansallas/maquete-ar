@@ -1,0 +1,28 @@
+[project]
+name = "maquete-ar"
+version = "0.1.0"
+description = "Realidade Aumentada para maquete escolar (Python + OpenCV + QR Code)"
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = [".venv"]
+
+[tool.ruff.lint]
+# E/F: erros básicos · I: ordem de imports · B: bugs comuns · UP: sintaxe moderna · SIM: simplificações
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "ar", "camera", "core", "qr", "vision", "conftest"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["app.py", "ar", "camera", "core", "qr", "vision", "scripts"]
+ignore_missing_imports = true
+check_untyped_defs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

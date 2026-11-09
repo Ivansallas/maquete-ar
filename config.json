@@ -1,0 +1,46 @@
+{
+    "camera": {
+        "index": 0,
+        "source": null,
+        "width": 1280,
+        "height": 720,
+        "fps": 30,
+        "backend": "auto",
+        "mirror": false,
+        "reconnect_interval": 2.0
+    },
+    "debug": true,
+    "qr": {
+        "backend": "auto",
+        "detect_scale": 0.75
+    },
+    "tracking": {
+        "smoothing": 0.5,
+        "max_missing_frames": 10
+    },
+    "ar": {
+        "enabled": true,
+        "mode": "perspective",
+        "panel_width": 3.2,
+        "panel_gap": 0.25,
+        "min_panel_width_px": 260,
+        "panel_opacity": 0.9,
+        "max_panels": 3,
+        "fade_in_seconds": 0.3
+    },
+    "aruco": {
+        "enabled": true,
+        "dictionary": "DICT_4X4_50",
+        "marker_length_m": 0.04
+    },
+    "window": {
+        "title": "Maquete AR",
+        "fullscreen": false
+    },
+    "paths": {
+        "content": "content",
+        "assets": "assets",
+        "screenshots": "screenshots",
+        "calibration": "camera/calibration.json"
+    }
+}
