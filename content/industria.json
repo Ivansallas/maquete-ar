@@ -4,5 +4,16 @@
     "icone": "🏭",
     "descricao": "Transforma matérias-primas vindas do campo e da natureza em produtos, como alimentos, roupas, móveis e máquinas.",
     "cor": "gray",
-    "aruco": 2
+    "aruco": 2,
+    "missao": "Encontre o lugar que transforma matérias-primas em produtos, como roupas e móveis.",
+    "quiz": {
+        "pergunta": "O que a indústria faz com o algodão colhido no campo?",
+        "alternativas": [
+            "Transforma em tecido e roupas",
+            "Planta de novo na lavoura",
+            "Usa para alimentar o gado"
+        ],
+        "correta": 0,
+        "explicacao": "Na indústria, a matéria-prima vira produto: o algodão vira tecido e roupas, a madeira vira móveis."
+    }
 }

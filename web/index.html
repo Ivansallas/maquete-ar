@@ -20,6 +20,43 @@
 
     <p id="dica" role="status" aria-live="polite">Carregando…</p>
 
+    <!-- Modo Missões: pista no topo (o texto vem de content/*.json) -->
+    <section id="missao" hidden>
+      <div class="missao-linha">
+        <strong id="missao-progresso"></strong>
+        <button id="abrir-album" type="button">📒 Álbum</button>
+      </div>
+      <p id="missao-pista"></p>
+      <p id="missao-status" role="status" aria-live="polite"></p>
+      <button id="responder" type="button" hidden>Responder</button>
+    </section>
+
+    <!-- Quiz da missão -->
+    <section id="quiz" class="janela" role="dialog" aria-modal="true" aria-labelledby="quiz-pergunta" hidden>
+      <div class="janela-caixa">
+        <header id="quiz-cabecalho" class="cabecalho-cor"><span class="icone"></span><h2 class="titulo"></h2></header>
+        <p id="quiz-pergunta"></p>
+        <div id="quiz-alternativas"></div>
+        <div id="quiz-resultado" role="status" aria-live="polite" hidden>
+          <h3 id="quiz-resultado-titulo"></h3>
+          <p id="quiz-resultado-texto"></p>
+          <p id="quiz-resultado-extra"></p>
+        </div>
+        <button id="quiz-continuar" class="botao-principal" type="button" hidden>Continuar</button>
+      </div>
+    </section>
+
+    <!-- Álbum de figurinhas (e tela final) -->
+    <section id="album" class="janela" role="dialog" aria-modal="true" aria-labelledby="album-titulo" hidden>
+      <div class="janela-caixa">
+        <h2 id="album-titulo">📒 Meu álbum</h2>
+        <p id="album-resumo"></p>
+        <div id="album-grade"></div>
+        <button id="album-fechar" class="botao-principal" type="button">Voltar para a câmera</button>
+        <button id="album-recomecar" class="botao-discreto" type="button">Recomeçar</button>
+      </div>
+    </section>
+
     <!-- Cartão fixo na parte de baixo (quando o painel não cabe em perspectiva) -->
     <div id="cartao" hidden></div>
 
@@ -28,7 +65,9 @@
       <h1>Maquete AR</h1>
       <p id="inicio-elemento" hidden></p>
       <p>Aponte a câmera do celular para os QR Codes da maquete e veja as informações aparecerem sobre ela.</p>
-      <button id="abrir-camera" type="button" disabled>Abrir câmera</button>
+      <button id="abrir-camera" type="button" disabled>🔍 Explorar a maquete</button>
+      <button id="abrir-missoes" type="button" disabled hidden>🎯 Missões</button>
+      <p id="missoes-explica" class="modo-explica" hidden>Nas <strong>Missões</strong>, você recebe pistas, encontra os elementos na maquete, responde perguntas e completa seu álbum de figurinhas.</p>
       <p id="inicio-erro" role="alert" hidden></p>
       <p class="privacidade">As imagens da câmera ficam só no seu aparelho: nada é gravado nem enviado.</p>
     </section>

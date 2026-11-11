@@ -4,5 +4,16 @@
     "icone": "🌱",
     "descricao": "Atividade responsável pelo cultivo de plantas para produção de alimentos e matérias-primas, como grãos, frutas, verduras e fibras.",
     "cor": "green",
-    "aruco": 0
+    "aruco": 0,
+    "missao": "Encontre o lugar onde se cultivam plantas para produzir grãos, frutas e verduras.",
+    "quiz": {
+        "pergunta": "Qual destes alimentos vem da agricultura?",
+        "alternativas": [
+            "O arroz e o feijão",
+            "O ovo da galinha",
+            "O leite da vaca"
+        ],
+        "correta": 0,
+        "explicacao": "Arroz e feijão são grãos cultivados na lavoura. Ovo e leite vêm da criação de animais, a pecuária."
+    }
 }

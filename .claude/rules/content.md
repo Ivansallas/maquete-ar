@@ -24,5 +24,13 @@ paths:
 - `aruco`: integer 0–999, unique across elements, never changed once printed
   (new elements take the next free id). Duplicates are reported and ignored on
   the second file.
+- `missao` + `quiz` (Missions mode, phone version): always together. `missao` is
+  the clue ("Encontre…") and must not name the element. `quiz` =
+  `{"pergunta", "alternativas": [3 texts], "correta": <0-based index>, "explicacao"}`
+  (2–4 alternatives accepted; the project standard is 3). The phone shuffles the
+  alternatives, so `correta` may always be 0. The answer must be supported by the
+  element's `descricao`. A wrong answer is never revealed ("perde a vez"), so
+  `explicacao` is shown only after a correct one. An invalid mission is a startup
+  warning and the element just stays out of Missions — the panel still works.
 - After adding a new element: run `scripts/gerar_qrcodes.py` to create its QR,
   then `pytest -q`.

@@ -4,5 +4,16 @@
     "icone": "🚜",
     "descricao": "Máquina agrícola usada para preparar o solo, plantar, puxar implementos e transportar a colheita, aumentando a produtividade no campo.",
     "cor": "yellow",
-    "aruco": 7
+    "aruco": 7,
+    "missao": "Encontre a máquina que ajuda a preparar o solo e a transportar a colheita.",
+    "quiz": {
+        "pergunta": "Como o trator ajuda o trabalho no campo?",
+        "alternativas": [
+            "Prepara o solo e aumenta a produtividade",
+            "Vende os produtos na cidade",
+            "Ordenha as vacas"
+        ],
+        "correta": 0,
+        "explicacao": "O trator prepara o solo, ajuda a plantar e transporta a colheita: o trabalho rende mais com menos esforço."
+    }
 }

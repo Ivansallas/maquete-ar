@@ -22,6 +22,8 @@ log = logging.getLogger(__name__)
 ID_PATTERN = re.compile(r"^[a-z0-9_]{1,40}$")
 #: Maior id de ArUco aceito no campo "aruco" (os dicionários do OpenCV vão até 1000).
 MAX_ARUCO_ID = 999
+#: Quantidade de alternativas aceita no quiz (o padrão do projeto é 3).
+MIN_ALTERNATIVAS, MAX_ALTERNATIVAS = 2, 4
 
 #: Cores nomeadas aceitas no campo "cor" (valores em BGR, padrão do OpenCV).
 COLOR_NAMES: dict[str, tuple[int, int, int]] = {
@@ -58,6 +60,57 @@ def parse_color(value: Any) -> tuple[int, int, int]:
 
 
 @dataclass(frozen=True)
+class Quiz:
+    """Pergunta de múltipla escolha do modo Missões (versão para celular)."""
+
+    pergunta: str
+    alternativas: tuple[str, ...]
+    correta: int  # índice da alternativa certa (0 = primeira)
+    explicacao: str = ""  # mostrada quando o aluno acerta
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "pergunta": self.pergunta,
+            "alternativas": list(self.alternativas),
+            "correta": self.correta,
+            "explicacao": self.explicacao,
+        }
+
+
+def parse_mission(missao: Any, quiz: Any) -> tuple[str, Quiz]:
+    """Valida o par ``missao`` (pista) + ``quiz``. Os dois são obrigatórios juntos."""
+    if not isinstance(missao, str) or not missao.strip():
+        raise ContentError("campo 'missao' (a pista) ausente ou vazio")
+    if not isinstance(quiz, dict):
+        raise ContentError("campo 'quiz' ausente ou não é um objeto {...}")
+    pergunta = quiz.get("pergunta")
+    if not isinstance(pergunta, str) or not pergunta.strip():
+        raise ContentError("quiz: campo 'pergunta' ausente ou vazio")
+    alternativas = quiz.get("alternativas")
+    if (
+        not isinstance(alternativas, list)
+        or not MIN_ALTERNATIVAS <= len(alternativas) <= MAX_ALTERNATIVAS
+        or not all(isinstance(a, str) and a.strip() for a in alternativas)
+    ):
+        raise ContentError(
+            f"quiz: 'alternativas' deve ser uma lista de {MIN_ALTERNATIVAS} a {MAX_ALTERNATIVAS} textos não vazios"
+        )
+    correta = quiz.get("correta")
+    # bool é subclasse de int em Python: "correta": true não pode virar 1
+    if not isinstance(correta, int) or isinstance(correta, bool) or not 0 <= correta < len(alternativas):
+        raise ContentError(f"quiz: 'correta' deve ser o número da alternativa certa, de 0 a {len(alternativas) - 1}")
+    explicacao = quiz.get("explicacao", "")
+    if not isinstance(explicacao, str):
+        raise ContentError("quiz: campo 'explicacao' deve ser texto")
+    return missao.strip(), Quiz(
+        pergunta=pergunta.strip(),
+        alternativas=tuple(a.strip() for a in alternativas),
+        correta=correta,
+        explicacao=explicacao.strip(),
+    )
+
+
+@dataclass(frozen=True)
 class ElementContent:
     """Conteúdo de um elemento da maquete.
 
@@ -74,7 +127,11 @@ class ElementContent:
     animacao: str | None = None
     modelo: str | None = None
     aruco: int | None = None  # id do marcador ArUco colado ao lado do QR (Fase 4)
+    missao: str | None = None  # pista do modo Missões ("Encontre o elemento que...")
+    quiz: Quiz | None = None
     extras: dict[str, Any] = field(default_factory=dict, compare=False)
+    #: Problemas que não impedem o elemento de aparecer (ex.: quiz mal escrito).
+    avisos: tuple[str, ...] = field(default=(), compare=False)
 
     @property
     def color_bgr(self) -> tuple[int, int, int]:
@@ -105,7 +162,16 @@ class ElementContent:
             not isinstance(aruco, int) or isinstance(aruco, bool) or not 0 <= aruco <= MAX_ARUCO_ID
         ):
             raise ContentError(f"campo 'aruco' deve ser um número inteiro de 0 a {MAX_ARUCO_ID}")
-        known = {"id", "titulo", "descricao", "aruco", *optional}
+        # Missão com erro não esconde o elemento: só sai do modo Missões, com aviso.
+        missao: str | None = None
+        quiz: Quiz | None = None
+        avisos: list[str] = []
+        if "missao" in data or "quiz" in data:
+            try:
+                missao, quiz = parse_mission(data.get("missao"), data.get("quiz"))
+            except ContentError as exc:
+                avisos.append(f"missão ignorada: {exc}")
+        known = {"id", "titulo", "descricao", "aruco", "missao", "quiz", *optional}
         return cls(
             id=element_id,
             titulo=data["titulo"].strip(),
@@ -116,7 +182,10 @@ class ElementContent:
             animacao=optional["animacao"],
             modelo=optional["modelo"],
             aruco=aruco,
+            missao=missao,
+            quiz=quiz,
             extras={k: v for k, v in data.items() if k not in known},
+            avisos=tuple(avisos),
         )
 
 
@@ -157,6 +226,8 @@ class ContentManager:
                 self._error(f"{path.name}: {exc}")
                 continue
             self._items[item.id] = item
+            for aviso in item.avisos:
+                self._error(f"{path.name}: {aviso}")
             if item.aruco is not None:
                 owner = self.aruco_map.setdefault(item.aruco, item.id)
                 if owner != item.id:  # o elemento carrega, só o ArUco repetido é ignorado

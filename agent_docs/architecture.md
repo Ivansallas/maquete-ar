@@ -83,6 +83,14 @@ they communicate through plain dataclasses (`QRMarker`, `TrackedMarker`,
   or be too small/distorted, it becomes a bottom **card** that stays
   `CARD_KEEP_SECONDS` after the marker is lost (time to read on a phone).
   Only the element closest to the screen centre gets a panel.
+- **Missions mode** (phone only, chosen on the start screen; Explore is unchanged):
+  `missoes.js` = pure logic (shuffled queue per phone, wrong answer → "perde a
+  vez" to the end of the queue without revealing the answer, stars by attempt,
+  saved progress validated on load), tested with `node --test`; `missoes-ui.js` =
+  clue bar, quiz, album. Aiming at the target for `HOLD_SECONDS` uses the tracked
+  marker (including the briefly "remembered" one), because reading flickers.
+  Progress lives in `localStorage` (try/catch: private tabs just don't remember).
+  Clues and questions come from `content/*.json` (`missao`, `quiz`).
 - **Detection budget**: copy downscaled to 960 px wide (ArUco needs ~50 px),
   every 60 ms. `?debug=1` overlays frames/QR/ArUco/crops; `?teste=1` uses
   `data/teste.png` instead of the camera.
