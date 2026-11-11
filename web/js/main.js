@@ -2,8 +2,10 @@
 // rastreamento -> painel HTML em perspectiva (ou cartão fixo embaixo).
 // Mesmas regras do programa do PC (ver agent_docs/architecture.md).
 
+import { isLight } from "./cores.js";
 import { UNIT_SQUARE, center, cssMatrix3d, dist, homography, projectAll, quadIsConvex, rectCorners } from "./geometry.js";
 import { Fusion, Tracker, parseQrText } from "./markers.js";
+import { createMissionsUi } from "./missoes-ui.js";
 
 // Mesmos parâmetros do config.json do PC (seção "ar").
 const PANEL_WIDTH_SIDES = 3.2; // largura do painel em "lados do QR"
@@ -26,6 +28,7 @@ const params = new URLSearchParams(location.search);
 const DEBUG = params.get("debug") === "1";
 const debugInfo = { frames: 0, qr: "-", aruco: 0, size: "-", error: "", attempts: [] };
 if (DEBUG) {
+  document.body.classList.add("debug");
   addEventListener("error", (e) => (debugInfo.error = String(e.message)));
   addEventListener("unhandledrejection", (e) => (debugInfo.error = String(e.reason)));
 }
@@ -43,6 +46,7 @@ const state = {
   cardUntil: 0,
   qrSide: new Map(), // elemento -> lado do ArUco onde o QR foi achado (esquerda/direita/acima/abaixo)
   lastProblem: null, // { text, until }
+  missions: null, // tela do modo Missões (só quando o aluno escolhe esse modo)
 };
 
 // ------------------------------------------------------------------ conteúdo
@@ -69,12 +73,6 @@ function buildPanel(id) {
     img.onerror = () => (img.hidden = true); // arquivo com problema: fica só o texto
   }
   return el;
-}
-
-function isLight(hex) {
-  const n = parseInt(hex.slice(1), 16);
-  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-  return 0.299 * r + 0.587 * g + 0.114 * b > 160;
 }
 
 /** Painel em perspectiva (criado uma vez por elemento e medido no tamanho natural). */
@@ -321,6 +319,10 @@ function render(tracks, now) {
   for (const [id, p] of state.panels) if (id !== placed) p.el.style.opacity = "0";
   if (!main && !card.hidden && now / 1000 > state.cardUntil) card.hidden = true;
 
+  // modo Missões: mirar o elemento certo. Usa também o marcador "lembrado" pelo
+  // rastreador (some por < keepSeconds): a leitura pisca e zeraria o tempo de mira.
+  if (state.missions) state.missions.update(main ? main.id : null, now / 1000);
+
   // dica no topo
   if (state.lastProblem && now < state.lastProblem.until) setHint(state.lastProblem.text, true);
   else if (main) setHint(state.content.elementos[main.id].titulo + (main.viaAruco ? " (pelo marcador)" : ""));
@@ -390,12 +392,28 @@ async function main() {
     p.hidden = false;
   }
 
-  const start = async () => {
+  // Missões: um erro aqui não pode impedir o modo Explorar
+  let missionsUi = null;
+  try {
+    missionsUi = createMissionsUi(state.content.elementos);
+  } catch (err) {
+    console.error(err);
+  }
+  const missionsButton = $("abrir-missoes");
+  missionsButton.hidden = !missionsUi?.available;
+  $("missoes-explica").hidden = missionsButton.hidden;
+
+  const start = async (mode) => {
     button.disabled = true;
+    missionsButton.disabled = true;
     error.hidden = true;
     try {
       state.source = params.get("teste") === "1" ? await startTestImage() : await startCamera();
       $("inicio").hidden = true;
+      if (mode === "missoes" && missionsUi) {
+        state.missions = missionsUi;
+        missionsUi.start();
+      }
       if (fromLink && state.content.elementos[fromLink]) {
         showCard(fromLink);
         state.cardUntil = performance.now() / 1000 + CARD_KEEP_SECONDS;
@@ -411,13 +429,17 @@ async function main() {
             : String(err.message || err);
       error.hidden = false;
       button.disabled = false;
+      missionsButton.disabled = false;
       if (fromLink && state.content.elementos[fromLink]) showCard(fromLink); // pelo menos o conteúdo
     }
   };
-  button.onclick = start;
+  button.onclick = () => start("explorar");
+  missionsButton.onclick = () => start("missoes");
   button.disabled = false;
+  missionsButton.disabled = false;
   hint.textContent = "";
-  if (params.get("teste") === "1") start(); // modo de teste: sem toque
+  // modo de teste: sem toque (?teste=1&modo=missoes abre direto nas Missões)
+  if (params.get("teste") === "1") start(params.get("modo") === "missoes" ? "missoes" : "explorar");
 }
 
 main();

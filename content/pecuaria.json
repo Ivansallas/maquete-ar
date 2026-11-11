@@ -4,5 +4,16 @@
     "icone": "🐄",
     "descricao": "Criação de animais como bois, vacas, porcos, galinhas e cabras para produção de carne, leite, ovos, couro e lã.",
     "cor": "brown",
-    "aruco": 5
+    "aruco": 5,
+    "missao": "Encontre o lugar onde se criam animais que nos dão leite, ovos e lã.",
+    "quiz": {
+        "pergunta": "Qual destes produtos vem da pecuária?",
+        "alternativas": [
+            "O leite",
+            "O milho",
+            "A madeira"
+        ],
+        "correta": 0,
+        "explicacao": "O leite vem da criação de vacas. O milho vem da agricultura e a madeira vem das árvores."
+    }
 }

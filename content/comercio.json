@@ -4,5 +4,16 @@
     "icone": "🏪",
     "descricao": "Atividade de compra, venda e troca de produtos e serviços. Liga quem produz no campo e na indústria a quem consome na cidade.",
     "cor": "orange",
-    "aruco": 1
+    "aruco": 1,
+    "missao": "Encontre o lugar onde as pessoas compram e vendem produtos.",
+    "quiz": {
+        "pergunta": "Qual é o papel do comércio?",
+        "alternativas": [
+            "Ligar quem produz a quem consome",
+            "Plantar sementes na lavoura",
+            "Criar animais no campo"
+        ],
+        "correta": 0,
+        "explicacao": "O comércio leva os produtos do campo e da indústria até as pessoas que vão usá-los."
+    }
 }

@@ -65,7 +65,8 @@ vision/       homography (perspective.py), tracking, ArUco, QR+ArUco fusion, Obj
 ar/           panel/text drawing (overlay.py), ARObject types, animations, ARRenderer
 content/      one <id>.json per model element (educational text, PT-BR)
 web/          phone version: index.html, css/, js/ (geometry, markers = JS port of
-              fusion/tracking, main), vendor/ (third-party, unmodified), tests/
+              fusion/tracking, missoes + missoes-ui = Missions mode, main),
+              vendor/ (third-party, unmodified), tests/
 scripts/      gerar_qrcodes.py, gerar_aruco.py, testar_camera.py, exportar_web.py
 tests/        pytest suite (no camera needed)
 assets/       images/ (Phase 2) and animations/ (Phase 3) for panels; icons/videos/models later

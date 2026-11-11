@@ -78,6 +78,8 @@ def _element(item: ElementContent, assets_dir: Path, data_dir: Path) -> dict[str
         "aruco": item.aruco,
         "imagem": _copy_media(item.imagem, IMAGE_EXTS, assets_dir, data_dir),
         "animacao": _copy_media(item.animacao, ANIMATION_EXTS, assets_dir, data_dir),
+        "missao": item.missao,
+        "quiz": item.quiz.to_dict() if item.quiz else None,
     }
 
 

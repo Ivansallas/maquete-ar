@@ -4,5 +4,16 @@
     "icone": "🌳",
     "descricao": "Áreas verdes e árvores protegem o solo, a água e os animais, regulam o clima e garantem qualidade de vida para o campo e a cidade.",
     "cor": "darkgreen",
-    "aruco": 4
+    "aruco": 4,
+    "missao": "Encontre as áreas verdes que protegem o solo, a água e os animais.",
+    "quiz": {
+        "pergunta": "Por que é importante proteger as árvores e as áreas verdes?",
+        "alternativas": [
+            "Elas protegem a água e ajudam a regular o clima",
+            "Elas atrapalham o crescimento da cidade",
+            "Elas servem só para enfeitar"
+        ],
+        "correta": 0,
+        "explicacao": "As áreas verdes protegem o solo, a água e os animais e ajudam a regular o clima, no campo e na cidade."
+    }
 }
