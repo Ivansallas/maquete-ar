@@ -1,0 +1,20 @@
+{
+    "id": "cooperativa",
+    "titulo": "Cooperativa",
+    "icone": "🤝",
+    "descricao": "União de produtores que trabalham juntos: compram e vendem em conjunto, conseguem melhores preços e se apoiam. Juntos, são mais fortes!",
+    "cor": "darkgreen",
+    "imagem": "images/cooperativa.jpg",
+    "aruco": 10,
+    "missao": "Encontre o lugar onde os produtores se unem para comprar e vender juntos.",
+    "quiz": {
+        "pergunta": "Por que os produtores entram em uma cooperativa?",
+        "alternativas": [
+            "Juntos conseguem melhores condições de venda",
+            "Para trabalhar sempre sozinhos",
+            "Para deixar de produzir"
+        ],
+        "correta": 0,
+        "explicacao": "Na cooperativa, os produtores se unem: comprando e vendendo juntos, conseguem preços melhores."
+    }
+}

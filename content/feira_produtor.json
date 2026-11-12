@@ -1,0 +1,20 @@
+{
+    "id": "feira_produtor",
+    "titulo": "Feira do Produtor",
+    "icone": "🍅",
+    "descricao": "Espaço de venda direta: o produtor vende frutas, verduras e queijos ao consumidor, sem intermediários. Valoriza a produção local e oferece alimentos frescos.",
+    "cor": "#c0392b",
+    "imagem": "images/feira_produtor.jpg",
+    "aruco": 17,
+    "missao": "Encontre as barracas onde o produtor vende frutas e verduras direto ao consumidor.",
+    "quiz": {
+        "pergunta": "O que é especial na feira do produtor?",
+        "alternativas": [
+            "O produtor vende direto ao consumidor",
+            "Só vende produtos importados",
+            "Não vende alimentos frescos"
+        ],
+        "correta": 0,
+        "explicacao": "Na feira, quem produz vende direto para quem consome, sem intermediários, valorizando a produção local."
+    }
+}

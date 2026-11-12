@@ -1,0 +1,20 @@
+{
+    "id": "paineis_solares",
+    "titulo": "Painéis Solares",
+    "icone": "☀️",
+    "descricao": "Captam a luz do sol e a transformam em energia elétrica. É uma fonte renovável e limpa, que reduz a conta de luz e ajuda o meio ambiente.",
+    "cor": "yellow",
+    "imagem": "images/paineis_solares.jpg",
+    "aruco": 16,
+    "missao": "Encontre as placas que transformam a luz do sol em energia elétrica.",
+    "quiz": {
+        "pergunta": "De onde os painéis solares tiram energia?",
+        "alternativas": [
+            "Da luz do sol",
+            "Da queima de carvão",
+            "Do vento das hélices"
+        ],
+        "correta": 0,
+        "explicacao": "As células dos painéis captam a luz do sol e geram corrente elétrica: uma energia renovável."
+    }
+}

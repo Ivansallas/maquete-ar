@@ -4,6 +4,7 @@
     "icone": "🏭",
     "descricao": "Transforma matérias-primas vindas do campo e da natureza em produtos, como alimentos, roupas, móveis e máquinas.",
     "cor": "gray",
+    "imagem": "images/industria.jpg",
     "aruco": 2,
     "missao": "Encontre o lugar que transforma matérias-primas em produtos, como roupas e móveis.",
     "quiz": {

@@ -10,16 +10,31 @@ from conftest import ROOT
 from core.config import DEFAULT_CONFIG, load_config
 from core.content import ContentError, ContentManager, ElementContent, parse_color
 
+# Elementos construídos na maquete física (ver assets/Documents/).
 REQUIRED_IDS = {
     "agricultura",
-    "pecuaria",
+    "armazem",
     "comercio",
+    "cooperativa",
+    "distribuidora",
+    "escritorio_comercial",
+    "escritorio_fazenda",
+    "feira_produtor",
     "industria",
-    "infraestrutura",
+    "leilao",
+    "loja_insumos",
+    "maquinarios",
     "meio_ambiente",
-    "residencia",
+    "paineis_solares",
+    "pecuaria",
+    "supermercado",
     "trator",
+    "veterinaria",
 }
+
+# Elementos retirados: id e ArUco nunca podem ser reaproveitados (QRs antigos impressos).
+RETIRED_IDS = {"infraestrutura", "residencia"}
+RETIRED_ARUCOS = {3, 6}
 
 
 def write(path, data) -> None:
@@ -30,6 +45,8 @@ def test_todos_os_conteudos_do_projeto_carregam():
     cm = ContentManager(ROOT / "content")
     assert cm.errors == []
     assert set(cm.ids) >= REQUIRED_IDS
+    assert not set(cm.ids) & RETIRED_IDS
+    assert not {item.aruco for cid in cm.ids if (item := cm.get(cid))} & RETIRED_ARUCOS
     agri = cm.get("agricultura")
     assert agri is not None and agri.titulo == "Agricultura" and agri.icone == "🌱"
 

@@ -166,11 +166,12 @@ sem mexer em código. Exemplo (`content/pecuaria.json`):
   aviso e o painel é mostrado só com o que funcionar.
 - Use apenas imagens que a escola tem direito de usar (fotos próprias,
   licenças livres).
-- Os 8 elementos básicos (agricultura, comércio, indústria, infraestrutura,
-  meio ambiente, pecuária, residência, trator) devem sempre existir.
+- Os elementos acompanham a maquete física (material em `assets/Documents/`).
+  Infraestrutura e Residência foram retirados: os ArUcos 3 e 6 não podem ser
+  reaproveitados.
 
 **Novo elemento:** crie `content/<id>.json` com o próximo número `aruco`
-livre (os básicos usam 0–7), rode `scripts\gerar_qrcodes.py` e imprima a
+livre (em uso até 19; 3 e 6 aposentados), rode `scripts\gerar_qrcodes.py` e imprima a
 nova dupla.
 
 ## Configuração

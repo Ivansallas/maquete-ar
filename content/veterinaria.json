@@ -1,0 +1,20 @@
+{
+    "id": "veterinaria",
+    "titulo": "Veterinária",
+    "icone": "🐾",
+    "descricao": "Cuida da saúde de todos os animais: vacina, previne doenças e faz diagnósticos. Animais saudáveis garantem carne, leite e ovos seguros.",
+    "cor": "purple",
+    "imagem": "images/veterinaria.jpg",
+    "aruco": 12,
+    "missao": "Encontre o lugar que cuida da saúde e da vacinação dos animais.",
+    "quiz": {
+        "pergunta": "Por que a veterinária é importante para o agro?",
+        "alternativas": [
+            "Animais saudáveis garantem alimentos seguros",
+            "Ela planta as sementes",
+            "Ela vende os produtos no mercado"
+        ],
+        "correta": 0,
+        "explicacao": "O veterinário vacina e trata os animais, evitando doenças e perdas na produção de carne, leite e ovos."
+    }
+}

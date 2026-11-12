@@ -1,0 +1,20 @@
+{
+    "id": "maquinarios",
+    "titulo": "Maquinários",
+    "icone": "🚜",
+    "descricao": "Tratores, colheitadeiras, plantadeiras e pulverizadores. As máquinas aumentam a produtividade, reduzem o esforço e economizam tempo no campo.",
+    "cor": "green",
+    "imagem": "images/maquinarios.jpg",
+    "aruco": 11,
+    "missao": "Encontre onde ficam as máquinas que plantam, pulverizam e colhem.",
+    "quiz": {
+        "pergunta": "O que os maquinários trazem para o campo?",
+        "alternativas": [
+            "Mais produtividade com menos esforço",
+            "Mais trabalho manual",
+            "Menos alimento produzido"
+        ],
+        "correta": 0,
+        "explicacao": "Máquinas como tratores e colheitadeiras fazem o trabalho render mais, com menos esforço e em menos tempo."
+    }
+}

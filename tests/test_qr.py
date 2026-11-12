@@ -65,7 +65,7 @@ def test_imagem_sem_qr():
 
 
 def test_detect_scale_retorna_coordenadas_originais(generator):
-    scene, centers = make_scene(generator, ["residencia"], qr_px=300)
+    scene, centers = make_scene(generator, ["supermercado"], qr_px=300)
     m = QRCodeDetector(detect_scale=0.5).detect(scene)[0]
     assert abs(m.center[0] - centers[0][0]) < 12
 
