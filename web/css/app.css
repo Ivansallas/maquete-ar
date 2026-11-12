@@ -101,13 +101,46 @@ body {
   text-transform: uppercase;
 }
 
-.painel .midia {
+.painel .ampliar {
+  position: relative;
   display: block;
   width: calc(100% - 28px);
+  margin: 12px 14px 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+
+.painel .ampliar[hidden] {
+  display: none;
+}
+
+.painel .midia {
+  display: block;
+  width: 100%;
   max-height: 150px;
   object-fit: contain;
-  margin: 12px 14px 0;
   border-radius: 8px;
+}
+
+/* lupa no canto: mostra que a imagem abre em tela cheia */
+.painel .lupa {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  font-size: 16px;
+  line-height: 30px;
+  text-align: center;
+}
+
+/* a camada AR não recebe toques; só a imagem do painel que está na tela */
+#camada-ar .painel.ativo .ampliar {
+  pointer-events: auto;
 }
 
 .painel .descricao {
@@ -152,6 +185,67 @@ body {
   font-size: 22px;
   line-height: 36px;
   cursor: pointer;
+}
+
+/* ---------------------------------------------------------------- tela cheia */
+#visualizador {
+  z-index: 5; /* por cima do quiz e do álbum */
+  padding: 0;
+  background: rgba(0, 0, 0, 0.92);
+}
+
+#visualizador-area {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  display: flex;
+  -webkit-overflow-scrolling: touch;
+}
+
+#visualizador-imagem {
+  margin: auto; /* centraliza; ampliada, rola a partir do canto */
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  cursor: zoom-in;
+}
+
+#visualizador.ampliado #visualizador-imagem {
+  max-width: none;
+  max-height: none;
+  cursor: zoom-out;
+}
+
+#visualizador-fechar {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top));
+  right: max(10px, env(safe-area-inset-right));
+  width: 44px;
+  height: 44px;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.65); /* visível também sobre imagem clara ampliada */
+  color: #fff;
+  font-size: 28px;
+  z-index: 1;
+  line-height: 44px;
+  cursor: pointer;
+}
+
+#visualizador-dica {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  margin: 0;
+  text-align: center;
+  color: var(--texto-suave);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+#visualizador.ampliado #visualizador-dica {
+  display: none;
 }
 
 /* ---------------------------------------------------------------- dica */

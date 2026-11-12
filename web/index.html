@@ -57,6 +57,13 @@
       </div>
     </section>
 
+    <!-- Imagem do painel em tela cheia (toque na imagem do painel) -->
+    <section id="visualizador" class="janela" role="dialog" aria-modal="true" aria-label="Imagem em tela cheia" hidden>
+      <div id="visualizador-area"><img id="visualizador-imagem" alt="" /></div>
+      <button id="visualizador-fechar" type="button" aria-label="Fechar">×</button>
+      <p id="visualizador-dica">Toque na imagem para ampliar</p>
+    </section>
+
     <!-- Cartão fixo na parte de baixo (quando o painel não cabe em perspectiva) -->
     <div id="cartao" hidden></div>
 
@@ -75,7 +82,10 @@
     <template id="modelo-painel">
       <article class="painel">
         <header><span class="icone"></span><h2 class="titulo"></h2></header>
-        <img class="midia" alt="" hidden />
+        <button class="ampliar" type="button" aria-label="Ver imagem em tela cheia" hidden>
+          <img class="midia" alt="" />
+          <span class="lupa" aria-hidden="true">🔍</span>
+        </button>
         <p class="descricao"></p>
       </article>
     </template>
