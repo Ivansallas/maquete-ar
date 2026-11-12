@@ -1,0 +1,20 @@
+{
+    "id": "loja_insumos",
+    "titulo": "Loja de Insumos",
+    "icone": "🌾",
+    "descricao": "Antes da porteira, o produtor compra o que precisa para produzir: sementes, fertilizantes, rações e defensivos. Sem insumos de qualidade, não há boa colheita.",
+    "cor": "#8a8a1e",
+    "imagem": "images/loja_insumos.jpg",
+    "aruco": 8,
+    "missao": "Encontre a loja onde o produtor compra sementes e fertilizantes antes de plantar.",
+    "quiz": {
+        "pergunta": "O que o produtor compra na loja de insumos?",
+        "alternativas": [
+            "Sementes e fertilizantes",
+            "Roupas e móveis prontos",
+            "Ações na bolsa de valores"
+        ],
+        "correta": 0,
+        "explicacao": "Insumos são tudo o que o produtor precisa para produzir, como sementes, fertilizantes, rações e defensivos."
+    }
+}

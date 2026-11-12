@@ -1,0 +1,20 @@
+{
+    "id": "distribuidora",
+    "titulo": "Distribuidora",
+    "icone": "🚚",
+    "descricao": "Recebe os produtos da indústria, armazena com cuidado e organiza o transporte até os mercados. É a ponte entre a indústria e o supermercado.",
+    "cor": "cyan",
+    "imagem": "images/distribuidora.jpg",
+    "aruco": 15,
+    "missao": "Encontre o galpão com caminhões que leva os produtos da indústria até os mercados.",
+    "quiz": {
+        "pergunta": "O que a distribuidora liga?",
+        "alternativas": [
+            "A indústria ao supermercado",
+            "A semente ao solo",
+            "O veterinário ao animal"
+        ],
+        "correta": 0,
+        "explicacao": "A distribuidora guarda os produtos da indústria e os transporta até os supermercados e lojas."
+    }
+}

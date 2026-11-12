@@ -1,0 +1,20 @@
+{
+    "id": "supermercado",
+    "titulo": "Supermercado",
+    "icone": "🛒",
+    "descricao": "Depois da porteira, o supermercado compra produtos do campo e da indústria e os revende ao consumidor final, levando os alimentos à mesa da população.",
+    "cor": "red",
+    "imagem": "images/supermercado.jpg",
+    "aruco": 14,
+    "missao": "Encontre a loja grande onde as famílias compram os alimentos do dia a dia.",
+    "quiz": {
+        "pergunta": "Qual é o papel do supermercado na cadeia do agro?",
+        "alternativas": [
+            "Vender os alimentos ao consumidor final",
+            "Fabricar fertilizantes",
+            "Cuidar do rebanho"
+        ],
+        "correta": 0,
+        "explicacao": "O supermercado é um dos principais pontos de venda: leva os produtos do campo até o consumidor."
+    }
+}

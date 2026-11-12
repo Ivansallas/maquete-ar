@@ -14,10 +14,14 @@ camera reads.
 - **One element = one id = one JSON file = one printed QR Code.** The file
   name must equal the `id` field (`agricultura.json` ↔ `"id": "agricultura"`);
   the loader rejects mismatches.
-- **The 8 base elements must always exist**: agricultura, pecuaria, comercio,
-  industria, infraestrutura, meio_ambiente, residencia, trator
-  (enforced by `tests/test_content.py`). Adding elements is fine; removing or
-  renaming one invalidates QR Codes already printed and glued to the model.
+- **Elements mirror the physical model.** The reference for which elements get
+  AR is the build material in `assets/Documents/` (infographics of each piece,
+  "Antes/Dentro/Depois da Porteira"). The required set is `REQUIRED_IDS` in
+  `tests/test_content.py`. Removing one invalidates QR Codes already printed,
+  so only do it when the user confirms the piece is not on the model.
+- **Retired elements** (removed 2026-11-12, not on the model): `infraestrutura`
+  (ArUco 3) and `residencia` (ArUco 6). Their ids and ArUco numbers are never
+  reused (`RETIRED_IDS` / `RETIRED_ARUCOS` in the same test).
 - **Never change an existing id** for the same reason. Change the title or
   description instead.
 - **Each element has its own ArUco** (`"aruco": N`, printed and glued right

@@ -1,0 +1,20 @@
+{
+    "id": "escritorio_fazenda",
+    "titulo": "Escritório da Fazenda",
+    "icone": "📋",
+    "descricao": "Dentro da porteira, é onde se planeja o plantio e a colheita, se controla o rebanho, o dinheiro e a equipe. Organização traz mais produtividade.",
+    "cor": "blue",
+    "imagem": "images/escritorio_fazenda.jpg",
+    "aruco": 13,
+    "missao": "Encontre o lugar onde se planejam o plantio, a colheita e as contas da fazenda.",
+    "quiz": {
+        "pergunta": "O que é feito no escritório da fazenda?",
+        "alternativas": [
+            "Planejamento e controle das atividades",
+            "Ordenha das vacas",
+            "Venda direta na feira"
+        ],
+        "correta": 0,
+        "explicacao": "No escritório da fazenda se planejam o plantio e a colheita e se controlam o rebanho, o dinheiro e a equipe."
+    }
+}

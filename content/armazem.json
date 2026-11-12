@@ -1,0 +1,20 @@
+{
+    "id": "armazem",
+    "titulo": "Armazém de Insumos",
+    "icone": "📦",
+    "descricao": "Recebe, guarda e organiza os insumos (sementes, fertilizantes, rações) e os distribui para lojas, cooperativas e fazendas, no momento certo para o produtor.",
+    "cor": "orange",
+    "imagem": "images/armazem.jpg",
+    "aruco": 9,
+    "missao": "Encontre o galpão que guarda e organiza os insumos antes de irem para as fazendas.",
+    "quiz": {
+        "pergunta": "Qual é a função do armazém de insumos?",
+        "alternativas": [
+            "Guardar e distribuir os insumos",
+            "Vender comida pronta ao consumidor",
+            "Cuidar da saúde dos animais"
+        ],
+        "correta": 0,
+        "explicacao": "O armazém recebe, conserva e organiza os insumos e os leva às lojas, cooperativas e fazendas."
+    }
+}

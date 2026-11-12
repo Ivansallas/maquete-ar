@@ -1,0 +1,20 @@
+{
+    "id": "leilao",
+    "titulo": "Leilão",
+    "icone": "🔨",
+    "descricao": "Antes da porteira, no leilão são negociados animais, como o gado, e outros produtos. Quem oferece o maior lance leva o lote.",
+    "cor": "brown",
+    "imagem": "images/leilao.jpg",
+    "aruco": 19,
+    "missao": "Encontre o lugar onde o gado é negociado e vendido por lances.",
+    "quiz": {
+        "pergunta": "O que é negociado no leilão?",
+        "alternativas": [
+            "Animais, como o gado",
+            "Painéis solares",
+            "Remédios veterinários"
+        ],
+        "correta": 0,
+        "explicacao": "No leilão os animais, como o gado, e outros produtos são vendidos para quem der o maior lance."
+    }
+}

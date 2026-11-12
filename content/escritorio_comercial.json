@@ -1,0 +1,20 @@
+{
+    "id": "escritorio_comercial",
+    "titulo": "Escritório e Bolsa",
+    "icone": "📈",
+    "descricao": "Centro de comando depois da porteira: planeja compras e vendas, negocia com fornecedores e acompanha na bolsa os preços de soja, milho, café e boi gordo.",
+    "cor": "gray",
+    "imagem": "images/escritorio_comercial.jpg",
+    "aruco": 18,
+    "missao": "Encontre o centro de comando que negocia e acompanha os preços dos produtos do campo.",
+    "quiz": {
+        "pergunta": "O que se acompanha na bolsa de valores do agro?",
+        "alternativas": [
+            "Os preços da soja, do milho e do café",
+            "A vacinação dos animais",
+            "A temperatura das estufas"
+        ],
+        "correta": 0,
+        "explicacao": "Na bolsa se negociam e acompanham os preços das commodities agrícolas, como soja, milho, café e boi gordo."
+    }
+}
