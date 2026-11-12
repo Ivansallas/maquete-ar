@@ -6,6 +6,7 @@ import { isLight } from "./cores.js";
 import { UNIT_SQUARE, center, cssMatrix3d, dist, homography, projectAll, quadIsConvex, rectCorners } from "./geometry.js";
 import { Fusion, Tracker, parseQrText } from "./markers.js";
 import { createMissionsUi } from "./missoes-ui.js";
+import { createImageViewer } from "./visualizador.js";
 
 // Mesmos parâmetros do config.json do PC (seção "ar").
 const PANEL_WIDTH_SIDES = 3.2; // largura do painel em "lados do QR"
@@ -23,6 +24,7 @@ const outlines = $("contornos");
 const arLayer = $("camada-ar");
 const card = $("cartao");
 const hint = $("dica");
+let viewer = null; // imagem em tela cheia (criada em main(); uma falha não derruba o app)
 const params = new URLSearchParams(location.search);
 // ?debug=1 mostra na tela o que foi detectado e os erros (diagnóstico em celular real)
 const DEBUG = params.get("debug") === "1";
@@ -67,10 +69,12 @@ function buildPanel(id) {
   el.querySelector(".descricao").textContent = data.descricao;
   const media = data.animacao || data.imagem; // animação tem prioridade; GIF anima sozinho
   const img = el.querySelector(".midia");
+  const zoomButton = el.querySelector(".ampliar");
   if (media) {
-    img.hidden = false;
+    zoomButton.hidden = false;
     img.src = media;
-    img.onerror = () => (img.hidden = true); // arquivo com problema: fica só o texto
+    img.onerror = () => (zoomButton.hidden = true); // arquivo com problema: fica só o texto
+    zoomButton.onclick = () => viewer?.open(media, data.titulo); // infográfico legível em tela cheia
   }
   return el;
 }
@@ -307,6 +311,7 @@ function render(tracks, now) {
       if (H) {
         p.el.style.transform = `matrix3d(${cssMatrix3d(H).join(",")})`;
         p.el.style.opacity = main.visible ? "1" : "0.6";
+        p.el.classList.add("ativo"); // só o painel visível recebe toques
         placed = main.id;
         card.hidden = true;
       }
@@ -316,7 +321,11 @@ function render(tracks, now) {
       state.cardUntil = now / 1000 + CARD_KEEP_SECONDS;
     }
   }
-  for (const [id, p] of state.panels) if (id !== placed) p.el.style.opacity = "0";
+  for (const [id, p] of state.panels) {
+    if (id === placed) continue;
+    p.el.style.opacity = "0";
+    p.el.classList.remove("ativo");
+  }
   if (!main && !card.hidden && now / 1000 > state.cardUntil) card.hidden = true;
 
   // modo Missões: mirar o elemento certo. Usa também o marcador "lembrado" pelo
@@ -390,6 +399,12 @@ async function main() {
     const p = $("inicio-elemento");
     p.textContent = `Você está no elemento: ${state.content.elementos[fromLink].titulo}`;
     p.hidden = false;
+  }
+
+  try {
+    viewer = createImageViewer();
+  } catch (err) {
+    console.error(err); // sem tela cheia, o painel continua funcionando
   }
 
   // Missões: um erro aqui não pode impedir o modo Explorar
